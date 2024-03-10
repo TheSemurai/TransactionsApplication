@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionsAPI", "TransactionsAPI\TransactionsAPI.csproj", "{C60D0791-4F13-4535-881A-9E4EEFF0CE53}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transactions.DataAccess", "Transactions.DataAccess\Transactions.DataAccess.csproj", "{042EA4F2-E2E3-4938-BB16-88B40E53D7CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{C60D0791-4F13-4535-881A-9E4EEFF0CE53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C60D0791-4F13-4535-881A-9E4EEFF0CE53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C60D0791-4F13-4535-881A-9E4EEFF0CE53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{042EA4F2-E2E3-4938-BB16-88B40E53D7CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{042EA4F2-E2E3-4938-BB16-88B40E53D7CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{042EA4F2-E2E3-4938-BB16-88B40E53D7CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{042EA4F2-E2E3-4938-BB16-88B40E53D7CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
