@@ -16,11 +16,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Infrastructure\Interfaces\" />
-      <Folder Include="Services\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\Transactions.DataAccess\Transactions.DataAccess.csproj" />
     </ItemGroup>
 

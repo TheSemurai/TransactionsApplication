@@ -38,39 +38,12 @@ public class TransactionsConfiguration : IEntityTypeConfiguration<TransactionsIn
                 v => $"{v.Latitude},{v.Longitude}",
                 v => FromStringToLocation(v)
             );
-        
-        // builder
-        //     .Property(x => x.ClientLocation)
-        //     // .HasColumnType("string")
-        //     .HasConversion(
-        //         fromLocation => fromLocation.ToString(),
-        //         stringLocation => ConvertToLocation(stringLocation)); // todo: refactor it;
     }
 
-    private static Location FromStringToLocation(string location)
-    {
-        return new Location
-        {
+    private static Location FromStringToLocation(string location) 
+        => new () {
             Latitude = double.Parse(location.Split(",")[0]),
             Longitude = double.Parse(location.Split(',')[1])
         };
-    }
-    
-    private static Location ConvertToLocation(string locationString)
-    {
-        var parts = locationString.Split(',');
-        if (parts.Length != 2)
-        {
-            throw new ArgumentException("Invalid location string format");
-        }
-
-        double latitude, longitude;
-        if (!double.TryParse(parts[0], out latitude) || !double.TryParse(parts[1], out longitude))
-        {
-            throw new ArgumentException("Invalid latitude or longitude format");
-        }
-
-        return new Location { Latitude = latitude, Longitude = longitude };
-    }
 }
 

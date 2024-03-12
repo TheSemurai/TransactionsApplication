@@ -1,18 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Transactions.DataAccess;
 using Transactions.DataAccess.Entities;
 using TransactionsAPI.Infrastructure;
+using TransactionsAPI.Infrastructure.Interfaces;
 
 namespace TransactionsAPI.Controllers;
 
 public class TransactionsController : BaseController
 {
     private readonly ApplicationContext _dbContext;
+    private readonly IParser<TransactionsInfo> _parser;
 
-    public TransactionsController(ApplicationContext dbContext)
+    public TransactionsController(ApplicationContext dbContext, IParser<TransactionsInfo> parser)
     {
         _dbContext = dbContext;
+        _parser = parser;
     }
 
     [HttpGet]
@@ -45,6 +47,7 @@ public class TransactionsController : BaseController
                 Latitude = -23.213,
                 Longitude = 1.123,
             },
+            
         };
 
         await _dbContext.AddAsync(trans);
@@ -58,5 +61,57 @@ public class TransactionsController : BaseController
                 "actually works",
             },
         });
+    }
+
+    [HttpPost]
+    [Route("ImportExcelData")]
+    public async Task<IActionResult> ImportExcelData(IFormFile file)
+    {
+        var transactions = _parser.ReadFromFile(file);
+
+        if (!transactions.Any())
+            NoContent();
+        
+        return Ok(transactions);
+    }
+    
+    [HttpGet]
+    [Route("ExportToExcel")]
+    public async Task<IActionResult> ExportToExcel()
+    {
+        var transactions = new List<TransactionsInfo>()
+        {
+            new ()
+            {
+                TransactionId = "lol1111",
+                Name = "Mykola Parasuk",
+                Email = "mykola322@gmail.com",
+                Amount = 123.33m,
+                TransactionDate = DateTime.Now,
+                ClientLocation = new ()
+                {
+                    Latitude = 54.214234,
+                    Longitude = -12.111241,
+                },
+            },
+            
+            new ()
+            {
+                TransactionId = "lol22222",
+                Name = "Julia Howlk",
+                Email = "howlk_julia89@gmail.com",
+                Amount = 741.02m,
+                TransactionDate = DateTime.Now,
+                ClientLocation = new ()
+                {
+                    Latitude = -1.111231,
+                    Longitude = 32.645233,
+                },
+            },
+        };
+
+        var stream = _parser.WriteIntoFile(transactions);
+
+        return File(stream, "application/octet-stream", "exported_data.csv");
     }
 }
