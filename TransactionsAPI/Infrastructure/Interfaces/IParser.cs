@@ -5,5 +5,5 @@ namespace TransactionsAPI.Infrastructure.Interfaces;
 public interface IParser<T>
 {
     List<T> ReadFromFile(IFormFile file);
-    MemoryStream WriteIntoFile(List<T> list);
+    byte[] WriteIntoFile(List<T> list);
 }

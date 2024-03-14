@@ -67,11 +67,13 @@ public class TransactionsController : BaseController
     [Route("ImportExcelData")]
     public async Task<IActionResult> ImportExcelData(IFormFile file)
     {
+        // getting from file
         var transactions = _parser.ReadFromFile(file);
 
         if (!transactions.Any())
             NoContent();
         
+        // upload to database if ok - request success
         return Ok(transactions);
     }
     
@@ -79,6 +81,7 @@ public class TransactionsController : BaseController
     [Route("ExportToExcel")]
     public async Task<IActionResult> ExportToExcel()
     {
+        // getting from database
         var transactions = new List<TransactionsInfo>()
         {
             new ()
@@ -110,8 +113,8 @@ public class TransactionsController : BaseController
             },
         };
 
-        var stream = _parser.WriteIntoFile(transactions);
+        var fileInBytes = _parser.WriteIntoFile(transactions);
 
-        return File(stream, "application/octet-stream", "exported_data.csv");
+        return File(fileInBytes, "application/octet-stream", "exported_data.csv");
     }
 }

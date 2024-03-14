@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Transactions.DataAccess.Entities;
 
-public class TransactionsInfo
+public class TransactionsInfo 
 {
     [Key]
     public string TransactionId { get; set; }

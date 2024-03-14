@@ -1,6 +1,7 @@
-using System.Text;
-using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
+using CsvHelper;
 using Transactions.DataAccess.Entities;
+using TransactionsAPI.Infrastructure.CsvHelperConfiguration;
 using TransactionsAPI.Infrastructure.Interfaces;
 
 namespace TransactionsAPI.Services;
@@ -9,29 +10,28 @@ public class CsvParser : IParser<TransactionsInfo>
 {
     public List<TransactionsInfo> ReadFromFile(IFormFile file)
     {
-        return new();
+        using (var reader = new StreamReader(file.OpenReadStream()))
+        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+        {
+            csv.Context.RegisterClassMap<TransactionsInfoMap>();
+            var records = csv.GetRecords<TransactionsInfo>();
+
+            return records.ToList();
+        }
     }
 
-    public MemoryStream WriteIntoFile(List<TransactionsInfo> list)
+    public byte[] WriteIntoFile(List<TransactionsInfo> list)
     {
-        var path = "export_data.csv";
-        
-        MemoryStream memoryStream = new MemoryStream();
-        
-        var header = "transaction_id,name,email,amount,transaction_date,client_location\n";
-        byte[] headerInBytes = Encoding.UTF8.GetBytes(header);
-        memoryStream.Write(headerInBytes, 0, headerInBytes.Length);
-
-        foreach (var item in list)
+        using (var memoryStream = new MemoryStream())
         {
-            var text = $"{item.TransactionId},{item.Name},{item.Email},{item.Amount},{item.TransactionDate},\"{item.ClientLocation.Latitude}, {item.ClientLocation.Longitude}\"\n";
-            byte[] textBytes = Encoding.UTF8.GetBytes(text);
-            memoryStream.Write(textBytes, 0, textBytes.Length);
+            using (var streamWriter = new StreamWriter(memoryStream))
+            using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+            {
+                csvWriter.Context.RegisterClassMap<TransactionsInfoMap>();
+                csvWriter.WriteRecords(list);
+            }
+
+            return memoryStream.ToArray();
         }
-        
-        memoryStream.Seek(0, SeekOrigin.Begin);
-        
-        return memoryStream;
     }
 }
-
