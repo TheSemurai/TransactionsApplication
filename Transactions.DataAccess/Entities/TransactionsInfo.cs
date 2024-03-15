@@ -11,6 +11,6 @@ public class TransactionsInfo
     public decimal Amount { get; set; }
     public DateTime TransactionDate { get; set; }
     
-    public Location ClientLocation { get; set; }
+    public string ClientLocation { get; set; }
 }
 

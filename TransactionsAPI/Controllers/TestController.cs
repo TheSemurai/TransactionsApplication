@@ -13,6 +13,58 @@ public class TestController : BaseController
     {
         _databaseHandler = databaseHandler;
     }
+    
+    [HttpGet]
+    [Route("TestMyFewTransInsert")]
+    public async Task<IActionResult> TestMyFewTransInsert()
+    {
+        var transactions = new List<TransactionsInfo>()
+        {
+            new ()
+            {
+                TransactionId = Guid.NewGuid().ToString(),
+                Name = "Olya Parasuk",
+                Email = "olya22@gmail.com",
+                Amount = 1231.33m,
+                TransactionDate = DateTime.Now,
+                ClientLocation = "54.214234, -12.111241",
+            },
+            new ()
+            {
+                TransactionId = Guid.NewGuid().ToString(),
+                Name = "John Cena",
+                Email = "cena11111@gmail.com",
+                Amount = 12001.56m,
+                TransactionDate = DateTime.Now,
+                ClientLocation = "-1.111231, 32.645233",
+            },
+            new ()
+            {
+                TransactionId = Guid.NewGuid().ToString(),
+                Name = "Raphtalia Racoon",
+                Email = "raphtalia69@gmail.com",
+                Amount = 333.02m,
+                TransactionDate = DateTime.Now,
+                ClientLocation = "-1.354431, 54.645233",
+            },
+            new ()
+            {
+                TransactionId = Guid.NewGuid().ToString(),
+                Name = "Wise Holo",
+                Email = "wiseHolo@gmail.com",
+                Amount = 1981.09m,
+                TransactionDate = DateTime.Now,
+                ClientLocation = "21.333231, -51.335299",
+            },
+        };
+
+        var request = await _databaseHandler.InsertTransactionsAsync(transactions);
+
+        if (request.Success)
+            return Ok(request.Messages);
+
+        return BadRequest(request.Messages);
+    }
 
     [HttpGet]
     [Route("TestMyInsert")]
@@ -20,24 +72,25 @@ public class TestController : BaseController
     {
         var trans = new TransactionsInfo()
         {
-            TransactionId = "t153a",
+            TransactionId = Guid.NewGuid().ToString(),
             Name = "Julia Howlk",
             Email = "howlk_julia89@gmail.com",
             Amount = 741.02m,
             TransactionDate = DateTime.Now,
-            ClientLocation = new()
-            {
-                Latitude = -1.111231,
-                Longitude = 32.645233,
-            },
+            // ClientLocation = new()
+            // {
+            //     Latitude = -1.111231,
+            //     Longitude = 32.645233,
+            // },
+            ClientLocation = "-1.111231, 32.645233",
         };
 
-        var request = await _databaseHandler.InsertTransaction(trans);
+        var request = await _databaseHandler.InsertTransactionAsync(trans);
 
-        if (request.Equals(true))
-            return Ok();
+        if (request.Success)
+            return Ok(request.Messages);
 
-        return BadRequest("Something went wrong.");
+        return BadRequest(request.Messages);
     }
 
     [HttpPost]

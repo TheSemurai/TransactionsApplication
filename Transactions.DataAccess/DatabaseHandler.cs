@@ -14,21 +14,13 @@ public class DatabaseHandler
     {
         _configuration = configuration;
     }
-
-    public async Task<RequestResult> InsertTransaction(TransactionsInfo transactionInfo)
+    
+    public async Task<RequestResult> InsertTransactionsAsync(ICollection<TransactionsInfo> transactions)
     {
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
         
         var insertQuery = @"INSERT INTO [TransactionsDB].[dbo].[Transactions] (TransactionId, Name, Email, Amount, TransactionDate, ClientLocation)
                             VALUES (@TransactionId,@Name,@Email,@Amount,@TransactionDate,@ClientLocation);";
-        var parameters = new {
-            TransactionId = transactionInfo.TransactionId,
-            Name = transactionInfo.Name,
-            Email = transactionInfo.Email,
-            Amount = transactionInfo.Amount,
-            TransactionDate = transactionInfo.TransactionDate,
-            ClientLocation = $"{transactionInfo.ClientLocation.Latitude}, {transactionInfo.ClientLocation.Longitude}"
-        };
 
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
@@ -37,7 +29,7 @@ public class DatabaseHandler
         
         try
         {
-            var request = await connection.ExecuteAsync(insertQuery, parameters, transaction);
+            var request = await connection.ExecuteAsync(insertQuery, transactions, transaction);
 
             if (request <= 0)
                 return new RequestResult()
@@ -45,23 +37,10 @@ public class DatabaseHandler
                     Success = false,
                     Messages = new List<string>
                     {
-                        $"Transaction {parameters.TransactionId} can not be added.",
+                        //$"Transaction {parameters.TransactionId} can not be added.",
                     },
                 };
-            
-            #region MyRegion
-            // var sqlCmd = new SqlCommand(insertQuery, connection, transaction);
 
-            // sqlCmd.Parameters.AddWithValue("@TransactionId", transactionInfo.TransactionId);
-            // sqlCmd.Parameters.AddWithValue("@Name", transactionInfo.Name);
-            // sqlCmd.Parameters.AddWithValue("@Email", transactionInfo.Email);
-            // sqlCmd.Parameters.AddWithValue("@Amount", transactionInfo.Amount);
-            // sqlCmd.Parameters.AddWithValue("@TransactionDate", transactionInfo.TransactionDate);
-            // sqlCmd.Parameters.AddWithValue("@ClientLocation", $"{transactionInfo.ClientLocation.Latitude}, {transactionInfo.ClientLocation.Longitude}");
-
-            // sqlCmd.ExecuteNonQuery();
-            #endregion
-            
             transaction.Commit();
             connection.Close();
             return new RequestResult()
@@ -85,6 +64,62 @@ public class DatabaseHandler
                 Messages = new List<string>
                 {
                     $"Something went wrong"
+                },
+            };
+        }
+    }
+    public async Task<RequestResult> InsertTransactionAsync(TransactionsInfo transactionInfo)
+    {
+        var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        
+        var insertQuery = @"INSERT INTO [TransactionsDB].[dbo].[Transactions] (TransactionId, Name, Email, Amount, TransactionDate, ClientLocation)
+                            VALUES (@TransactionId,@Name,@Email,@Amount,@TransactionDate,@ClientLocation);";
+
+        await using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync();
+
+        await using var transaction = connection.BeginTransaction();
+        
+        try
+        {
+            //var request = await connection.ExecuteAsync(insertQuery, parameters, transaction);
+            var request = await connection.ExecuteAsync(insertQuery, transactionInfo, transaction);
+            
+            if (request <= 0)
+                return new RequestResult()
+                {
+                    Success = false,
+                    Messages = new List<string>
+                    {
+                        $"Transaction {transactionInfo.TransactionId} can not be added.",
+                    },
+                };
+
+            transaction.Commit();
+            connection.Close();
+            
+            return new RequestResult()
+            {
+                Success = true,
+                Messages = new List<string>
+                {
+                    $"Transactions was added successfully.",
+                },
+            };
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception.Message);
+            
+            transaction.Rollback();
+            connection.Close();
+            return new RequestResult()
+            {
+                Success = false,
+                Messages = new List<string>
+                {
+                    $"Something went wrong",
+                    exception.Message,
                 },
             };
         }

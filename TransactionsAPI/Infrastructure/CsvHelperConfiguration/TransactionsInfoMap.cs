@@ -29,10 +29,10 @@ public class TransactionsInfoMap : ClassMap<TransactionsInfo>
             .Index(4)
             .Name("transaction_date")
             .TypeConverter<DateTimeFormatConvertor>();
-        
+
         Map(x => x.ClientLocation)
             .Index(5)
-            .Name("client_location")
-            .TypeConverter<LocationConverter>();
+            .Name("client_location");
+        //.TypeConverter<LocationConverter>();
     }
 }

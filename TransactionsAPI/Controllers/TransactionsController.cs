@@ -42,12 +42,12 @@ public class TransactionsController : BaseController
             Name = "Ilya Pupkin",
             Amount = 218.44563m,
             TransactionDate = new DateTime(2001,12,12,12,12,12),
-            ClientLocation = new Location()
-            {
-                Latitude = -23.213,
-                Longitude = 1.123,
-            },
-            
+            // ClientLocation = new Location()
+            // {
+            //     Latitude = -23.213,
+            //     Longitude = 1.123,
+            // },
+            ClientLocation = "-23.213, 1.123",
         };
 
         await _dbContext.AddAsync(trans);
@@ -91,11 +91,12 @@ public class TransactionsController : BaseController
                 Email = "mykola322@gmail.com",
                 Amount = 123.33m,
                 TransactionDate = DateTime.Now,
-                ClientLocation = new ()
-                {
-                    Latitude = 54.214234,
-                    Longitude = -12.111241,
-                },
+                // ClientLocation = new ()
+                // {
+                //     Latitude = 54.214234,
+                //     Longitude = -12.111241,
+                // },
+                ClientLocation = "54.214234, -12.111241",
             },
             
             new ()
@@ -105,11 +106,12 @@ public class TransactionsController : BaseController
                 Email = "howlk_julia89@gmail.com",
                 Amount = 741.02m,
                 TransactionDate = DateTime.Now,
-                ClientLocation = new ()
-                {
-                    Latitude = -1.111231,
-                    Longitude = 32.645233,
-                },
+                // ClientLocation = new ()
+                // {
+                //     Latitude = -1.111231,
+                //     Longitude = 32.645233,
+                // },
+                ClientLocation = "-1.111231, 32.645233",
             },
         };
 

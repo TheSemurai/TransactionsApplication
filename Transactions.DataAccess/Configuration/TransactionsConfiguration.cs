@@ -31,11 +31,11 @@ public class TransactionsConfiguration : IEntityTypeConfiguration<TransactionsIn
             .HasColumnType("datetime");
 
         builder
-            .Property(e => e.ClientLocation)
-            .HasConversion(
-                v => $"{v.Latitude},{v.Longitude}",
-                v => FromStringToLocation(v)
-            );
+            .Property(e => e.ClientLocation);
+        // .HasConversion(
+        //     v => $"{v.Latitude},{v.Longitude}",
+        //     v => FromStringToLocation(v)
+        // );
     }
 
     private static Location FromStringToLocation(string location) 
