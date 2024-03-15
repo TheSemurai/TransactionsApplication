@@ -32,8 +32,6 @@ public class TransactionsConfiguration : IEntityTypeConfiguration<TransactionsIn
 
         builder
             .Property(e => e.ClientLocation)
-            // .HasColumnType("nvarchar(max)")
-            // .HasColumnType("nvarchar")
             .HasConversion(
                 v => $"{v.Latitude},{v.Longitude}",
                 v => FromStringToLocation(v)

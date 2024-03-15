@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Transactions.DataAccess;
 using Transactions.DataAccess.Entities;
 using TransactionsAPI.Infrastructure;
 
@@ -6,6 +7,39 @@ namespace TransactionsAPI.Controllers;
 
 public class TestController : BaseController
 {
+    private readonly DatabaseHandler _databaseHandler;
+
+    public TestController(DatabaseHandler databaseHandler)
+    {
+        _databaseHandler = databaseHandler;
+    }
+
+    [HttpGet]
+    [Route("TestMyInsert")]
+    public async Task<IActionResult> TestMyInsert()
+    {
+        var trans = new TransactionsInfo()
+        {
+            TransactionId = "t153a",
+            Name = "Julia Howlk",
+            Email = "howlk_julia89@gmail.com",
+            Amount = 741.02m,
+            TransactionDate = DateTime.Now,
+            ClientLocation = new()
+            {
+                Latitude = -1.111231,
+                Longitude = 32.645233,
+            },
+        };
+
+        var request = await _databaseHandler.InsertTransaction(trans);
+
+        if (request.Equals(true))
+            return Ok();
+
+        return BadRequest("Something went wrong.");
+    }
+
     [HttpPost]
     [Route("OnPostUploadAsync")]
     public async Task<IActionResult> OnPostUploadAsync(IFormFile file)
