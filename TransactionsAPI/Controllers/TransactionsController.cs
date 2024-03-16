@@ -10,11 +10,16 @@ public class TransactionsController : BaseController
 {
     private readonly ApplicationContext _dbContext;
     private readonly IParser<TransactionsInfo> _parser;
+    private readonly DatabaseHandler _databaseHandler;
 
-    public TransactionsController(ApplicationContext dbContext, IParser<TransactionsInfo> parser)
+    public TransactionsController(
+        ApplicationContext dbContext, 
+        IParser<TransactionsInfo> parser, 
+        DatabaseHandler databaseHandler)
     {
         _dbContext = dbContext;
         _parser = parser;
+        _databaseHandler = databaseHandler;
     }
 
     [HttpGet]
@@ -72,9 +77,13 @@ public class TransactionsController : BaseController
 
         if (!transactions.Any())
             NoContent();
-        
-        // upload to database if ok - request success
-        return Ok(transactions);
+
+        var request = await _databaseHandler.InsertTransactionsAsync(transactions);
+
+        if (request.Success)
+            return Ok(request);
+
+        return BadRequest(request);
     }
     
     [HttpGet]

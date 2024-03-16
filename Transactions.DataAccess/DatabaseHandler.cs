@@ -18,9 +18,19 @@ public class DatabaseHandler
     public async Task<RequestResult> InsertTransactionsAsync(ICollection<TransactionsInfo> transactions)
     {
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
-        
-        var insertQuery = @"INSERT INTO [TransactionsDB].[dbo].[Transactions] (TransactionId, Name, Email, Amount, TransactionDate, ClientLocation)
-                            VALUES (@TransactionId,@Name,@Email,@Amount,@TransactionDate,@ClientLocation);";
+
+        var insertQuery = @"MERGE [TransactionsDB].[dbo].[Transactions] WITH (SERIALIZABLE) AS OriginTrans
+                            USING (VALUES (@TransactionId,@Name,@Email,@Amount,@TransactionDate,@ClientLocation)) AS Trans (TransactionId, Name, Email, Amount, TransactionDate, ClientLocation)
+                            ON Trans.TransactionId = OriginTrans.TransactionId
+                            WHEN MATCHED THEN
+                            UPDATE SET  OriginTrans.Name = Trans.Name, 
+			                            OriginTrans.Email = Trans.Email,
+			                            OriginTrans.Amount = Trans.Amount,
+			                            OriginTrans.TransactionDate = Trans.TransactionDate,
+			                            OriginTrans.ClientLocation = Trans.ClientLocation
+                            WHEN NOT MATCHED THEN
+                            INSERT (TransactionId, Name, Email, Amount, TransactionDate, ClientLocation)
+                            VALUES (Trans.TransactionId, Trans.Name, Trans.Email, Trans.Amount, Trans.TransactionDate, Trans.ClientLocation);";
 
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
@@ -37,7 +47,7 @@ public class DatabaseHandler
                     Success = false,
                     Messages = new List<string>
                     {
-                        //$"Transaction {parameters.TransactionId} can not be added.",
+                        "Something went wrong when trying to add your transactions.",
                     },
                 };
 
@@ -68,6 +78,7 @@ public class DatabaseHandler
             };
         }
     }
+    
     public async Task<RequestResult> InsertTransactionAsync(TransactionsInfo transactionInfo)
     {
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
@@ -82,7 +93,6 @@ public class DatabaseHandler
         
         try
         {
-            //var request = await connection.ExecuteAsync(insertQuery, parameters, transaction);
             var request = await connection.ExecuteAsync(insertQuery, transactionInfo, transaction);
             
             if (request <= 0)
