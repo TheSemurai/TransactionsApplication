@@ -14,7 +14,27 @@ public class DatabaseHandler
     {
         _configuration = configuration;
     }
-    
+
+    public async Task<IEnumerable<TransactionsInfo>> GetAllTransactions()
+    {
+        var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        var selectQuery = @"SELECT [TransactionId]
+                                  ,[Name]
+                                  ,[Email]
+                                  ,[Amount]
+                                  ,[TransactionDate]
+                                  ,[ClientLocation]
+                              FROM [TransactionsDB].[dbo].[Transactions]";
+        
+        await using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync();
+
+        var allTransactions = await connection.QueryAsync<TransactionsInfo>(selectQuery);
+        
+        connection.Close();
+        return allTransactions;
+    }
+
     public async Task<RequestResult> InsertTransactionsAsync(ICollection<TransactionsInfo> transactions)
     {
         var connectionString = _configuration.GetConnectionString("DefaultConnection");

@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-
 namespace TransactionsAPI.Infrastructure.Interfaces;
 
 public interface IParser<T>
