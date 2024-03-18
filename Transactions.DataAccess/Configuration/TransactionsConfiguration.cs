@@ -38,10 +38,10 @@ public class TransactionsConfiguration : IEntityTypeConfiguration<TransactionsIn
         // );
     }
 
-    private static Location FromStringToLocation(string location) 
-        => new () {
-            Latitude = double.Parse(location.Split(",")[0]),
-            Longitude = double.Parse(location.Split(',')[1])
-        };
+    // private static Location FromStringToLocation(string location) 
+    //     => new () {
+    //         Latitude = double.Parse(location.Split(",")[0]),
+    //         Longitude = double.Parse(location.Split(',')[1])
+    //     };
 }
 

@@ -1,3 +1,4 @@
+using GeoTimeZone;
 using Microsoft.AspNetCore.Mvc;
 using Transactions.DataAccess;
 using Transactions.DataAccess.Entities;
@@ -19,6 +20,35 @@ public class TransactionsController : BaseController
         _databaseHandler = databaseHandler;
     }
 
+    [HttpGet]
+    [Route("MyTransactions")]
+    public async Task<IActionResult> MyTransactions(string email, DateTimeOffset from,
+        DateTimeOffset to)
+    {
+        var transactions = await _databaseHandler.GetCurrentTransactions(email, from, to);
+
+        if (!transactions.Any())
+            return NoContent();
+
+        return Ok(transactions);
+    }
+    
+    [HttpGet]
+    [Route("OtherUserTransactions")]
+    public async Task<IActionResult> OtherUserTransactions(DateTimeOffset from,
+        DateTimeOffset to)
+    {
+        var transactions = await _databaseHandler.GetCurrentTransactions(email, from, to);
+
+        if (!transactions.Any())
+            return NoContent();
+
+        return Ok(transactions);
+    }
+    
+    [HttpGet]
+    [Route("Get")]
+
     [HttpPost]
     [Route("ImportExcelData")]
     public async Task<IActionResult> ImportExcelData(IFormFile file)
@@ -26,8 +56,17 @@ public class TransactionsController : BaseController
         var transactions = _parser.ReadFromFile(file);
 
         if (!transactions.Any())
-            NoContent();
-
+            return NoContent();
+        
+        // transactions.ForEach(transaction =>
+        // {
+        //     var coordinates = transaction.ClientLocation.Split(",");
+        //     var lat = double.Parse(coordinates[0]);
+        //     var lng = double.Parse(coordinates[1]);
+        //
+        //     transaction.TimeZone = TimeZoneLookup.GetTimeZone(lat, lng).Result;
+        // });
+        
         var request = await _databaseHandler.InsertTransactionsAsync(transactions);
 
         if (request.Success)
@@ -48,5 +87,14 @@ public class TransactionsController : BaseController
         var fileInBytes = _parser.WriteIntoFile(transactions);
 
         return File(fileInBytes, "application/octet-stream", "exported_data.csv");
+    }
+
+    [HttpGet]
+    [Route("GetTimeZone")]
+    public async Task<IActionResult> GetTimeZone(double lat, double lng)
+    {
+        var timezone = TimeZoneLookup.GetTimeZone(lat, lng);
+
+        return Ok(timezone);
     }
 }

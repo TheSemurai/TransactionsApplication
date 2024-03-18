@@ -14,6 +14,35 @@ public class DatabaseHandler
     {
         _configuration = configuration;
     }
+    
+    public async Task<IEnumerable<TransactionsInfo>> GetCurrentTransactions(String email, DateTimeOffset from,
+        DateTimeOffset to)
+    {
+        var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        var selectQuery = @"SELECT [TransactionId]
+                                  ,[Name]
+                                  ,[Email]
+                                  ,[Amount]
+                                  ,[TransactionDate]
+                                  ,[ClientLocation]
+                              FROM [TransactionsDB].[dbo].[Transactions]
+                              WHERE [Email] = @email 
+                              AND [TransactionDate] BETWEEN @fromDate AND @toDate";
+        var parameters = new
+        {
+            email = email,
+            fromDate = from,
+            toDate = to,
+        };
+        
+        await using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync();
+
+        var allTransactions = await connection.QueryAsync<TransactionsInfo>(selectQuery, parameters);
+        
+        connection.Close();
+        return allTransactions;
+    }
 
     public async Task<IEnumerable<TransactionsInfo>> GetAllTransactions()
     {
@@ -98,60 +127,60 @@ public class DatabaseHandler
             };
         }
     }
-    
-    public async Task<RequestResult> InsertTransactionAsync(TransactionsInfo transactionInfo)
-    {
-        var connectionString = _configuration.GetConnectionString("DefaultConnection");
-        
-        var insertQuery = @"INSERT INTO [TransactionsDB].[dbo].[Transactions] (TransactionId, Name, Email, Amount, TransactionDate, ClientLocation)
-                            VALUES (@TransactionId,@Name,@Email,@Amount,@TransactionDate,@ClientLocation);";
 
-        await using var connection = new SqlConnection(connectionString);
-        await connection.OpenAsync();
-
-        await using var transaction = connection.BeginTransaction();
-        
-        try
-        {
-            var request = await connection.ExecuteAsync(insertQuery, transactionInfo, transaction);
-            
-            if (request <= 0)
-                return new RequestResult()
-                {
-                    Success = false,
-                    Messages = new List<string>
-                    {
-                        $"Transaction {transactionInfo.TransactionId} can not be added.",
-                    },
-                };
-
-            transaction.Commit();
-            connection.Close();
-            
-            return new RequestResult()
-            {
-                Success = true,
-                Messages = new List<string>
-                {
-                    $"Transactions was added successfully.",
-                },
-            };
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception.Message);
-            
-            transaction.Rollback();
-            connection.Close();
-            return new RequestResult()
-            {
-                Success = false,
-                Messages = new List<string>
-                {
-                    $"Something went wrong",
-                    exception.Message,
-                },
-            };
-        }
-    }
+    // public async Task<RequestResult> InsertTransactionAsync(TransactionsInfo transactionInfo)
+    // {
+    //     var connectionString = _configuration.GetConnectionString("DefaultConnection");
+    //     
+    //     var insertQuery = @"INSERT INTO [TransactionsDB].[dbo].[Transactions] (TransactionId, Name, Email, Amount, TransactionDate, ClientLocation)
+    //                         VALUES (@TransactionId,@Name,@Email,@Amount,@TransactionDate,@ClientLocation);";
+    //
+    //     await using var connection = new SqlConnection(connectionString);
+    //     await connection.OpenAsync();
+    //
+    //     await using var transaction = connection.BeginTransaction();
+    //     
+    //     try
+    //     {
+    //         var request = await connection.ExecuteAsync(insertQuery, transactionInfo, transaction);
+    //         
+    //         if (request <= 0)
+    //             return new RequestResult()
+    //             {
+    //                 Success = false,
+    //                 Messages = new List<string>
+    //                 {
+    //                     $"Transaction {transactionInfo.TransactionId} can not be added.",
+    //                 },
+    //             };
+    //
+    //         transaction.Commit();
+    //         connection.Close();
+    //         
+    //         return new RequestResult()
+    //         {
+    //             Success = true,
+    //             Messages = new List<string>
+    //             {
+    //                 $"Transactions was added successfully.",
+    //             },
+    //         };
+    //     }
+    //     catch (Exception exception)
+    //     {
+    //         Console.WriteLine(exception.Message);
+    //         
+    //         transaction.Rollback();
+    //         connection.Close();
+    //         return new RequestResult()
+    //         {
+    //             Success = false,
+    //             Messages = new List<string>
+    //             {
+    //                 $"Something went wrong",
+    //                 exception.Message,
+    //             },
+    //         };
+    //     }
+    // }
 }
