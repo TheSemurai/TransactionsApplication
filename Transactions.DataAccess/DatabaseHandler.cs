@@ -66,7 +66,6 @@ public class DatabaseHandler
                                   ,[Amount]
                                   ,[TransactionDate]
                                   ,[ClientLocation]
-                                  ,[TimeZone]
                               FROM [TransactionsDB].[dbo].[Transactions]
                               WHERE [Email] = @email 
                               AND [TransactionDate] BETWEEN @fromDate AND @toDate";
