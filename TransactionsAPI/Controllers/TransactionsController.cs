@@ -39,8 +39,8 @@ public class TransactionsController : BaseController
     }
     
     [HttpGet]
-    [Route("OtherUserTransactions")]
-    public async Task<IActionResult> OtherUserTransactions(string timeZoneId, DateTimeOffset from,
+    [Route("AllTransactionsByTimeZone")]
+    public async Task<IActionResult> AllTransactionsByTimeZone(string timeZoneId, DateTimeOffset from,
         DateTimeOffset to)
     {
         TimeZoneInfo timeZone;

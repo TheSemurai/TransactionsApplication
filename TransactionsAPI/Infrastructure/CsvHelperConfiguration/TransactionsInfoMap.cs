@@ -1,5 +1,4 @@
 using CsvHelper.Configuration;
-using Transactions.DataAccess.Entities;
 using TransactionsAPI.Entities;
 using TransactionsAPI.Infrastructure.CsvHelperConfiguration.Convertors;
 

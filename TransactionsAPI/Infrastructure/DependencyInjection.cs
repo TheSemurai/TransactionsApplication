@@ -1,5 +1,4 @@
 using Transactions.DataAccess;
-using Transactions.DataAccess.Entities;
 using TransactionsAPI.Entities;
 using TransactionsAPI.Infrastructure.Interfaces;
 using TransactionsAPI.Services;

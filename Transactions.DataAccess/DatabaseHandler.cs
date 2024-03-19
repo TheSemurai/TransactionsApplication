@@ -69,8 +69,8 @@ public class DatabaseHandler
                                   ,[TimeZone]
                               FROM [TransactionsDB].[dbo].[Transactions]
                               WHERE [Email] = @email 
-                              AND [TransactionDate] BETWEEN @fromDate AND @toDate
-                              AND [TimeZone] = @TimeZone"; // todo: delete
+                              AND [TransactionDate] BETWEEN @fromDate AND @toDate";
+                              //AND [TimeZone] = @TimeZone"; // todo: delete
         var parameters = new
         {
             email = email,
