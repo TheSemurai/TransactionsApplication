@@ -2,18 +2,20 @@ using GeoTimeZone;
 using Microsoft.AspNetCore.Mvc;
 using Transactions.DataAccess;
 using Transactions.DataAccess.Entities;
+using TransactionsAPI.Entities;
 using TransactionsAPI.Infrastructure;
 using TransactionsAPI.Infrastructure.Interfaces;
+using TransactionsAPI.Services;
 
 namespace TransactionsAPI.Controllers;
 
 public class TransactionsController : BaseController
 {
-    private readonly IParser<TransactionsInfo> _parser;
+    private readonly IParser<TransactionsInfoModel> _parser;
     private readonly DatabaseHandler _databaseHandler;
 
     public TransactionsController(
-        IParser<TransactionsInfo> parser, 
+        IParser<TransactionsInfoModel> parser, 
         DatabaseHandler databaseHandler)
     {
         _parser = parser;
@@ -30,43 +32,73 @@ public class TransactionsController : BaseController
         if (!transactions.Any())
             return NoContent();
 
-        return Ok(transactions);
+        var model = transactions.Select(transaction => 
+            transaction.CreateModelFromTransaction());
+        
+        return Ok(model);
     }
     
     [HttpGet]
     [Route("OtherUserTransactions")]
-    public async Task<IActionResult> OtherUserTransactions(DateTimeOffset from,
+    public async Task<IActionResult> OtherUserTransactions(string timeZoneId, DateTimeOffset from,
         DateTimeOffset to)
     {
-        var transactions = await _databaseHandler.GetCurrentTransactions(email, from, to);
+        TimeZoneInfo timeZone;
+        try
+        {
+            timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(new RequestResult()
+            {
+                Success = false,
+                Messages = new List<string>()
+                {
+                    $"Something went wrong with time zone name (name: {timeZoneId}).",
+                }
+            });
+        }
 
+        var transactions = await _databaseHandler.GetSpecificTransactionsByTimeZone(timeZone, from, to);
+        
         if (!transactions.Any())
-            return NoContent();
-
-        return Ok(transactions);
+             return NoContent();
+        
+        var transactionsModel = transactions.Select(model => 
+            model.CreateModelFromTransaction()).ToList();
+        
+        return Ok(transactionsModel);
     }
-    
-    [HttpGet]
-    [Route("Get")]
 
     [HttpPost]
     [Route("ImportExcelData")]
     public async Task<IActionResult> ImportExcelData(IFormFile file)
     {
-        var transactions = _parser.ReadFromFile(file);
+        var transactionsModel = _parser.ReadFromFile(file);
 
-        if (!transactions.Any())
+        if (!transactionsModel.Any())
             return NoContent();
-        
-        // transactions.ForEach(transaction =>
-        // {
-        //     var coordinates = transaction.ClientLocation.Split(",");
-        //     var lat = double.Parse(coordinates[0]);
-        //     var lng = double.Parse(coordinates[1]);
-        //
-        //     transaction.TimeZone = TimeZoneLookup.GetTimeZone(lat, lng).Result;
-        // });
-        
+
+        IList<TransactionsInfo> transactions;
+
+        try
+        {
+            transactions = transactionsModel.Select(model => 
+                model.CreateOriginTransactionFromModel()).ToList();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(new RequestResult()
+            {
+                Success = false,
+                Messages = new List<string>()
+                {
+                    $"Something went wrong with transactions.",
+                }
+            });
+        }
+
         var request = await _databaseHandler.InsertTransactionsAsync(transactions);
 
         if (request.Success)
@@ -74,7 +106,7 @@ public class TransactionsController : BaseController
 
         return BadRequest(request);
     }
-    
+
     [HttpGet]
     [Route("ExportToExcel")]
     public async Task<IActionResult> ExportToExcel()
@@ -83,18 +115,12 @@ public class TransactionsController : BaseController
 
         if (!transactions.Any())
             return NoContent();
+        
+        var transactionsModel = transactions.Select(model => 
+            model.CreateModelFromTransaction()).ToList();
 
-        var fileInBytes = _parser.WriteIntoFile(transactions);
+        var fileInBytes = _parser.WriteIntoFile(transactionsModel);
 
         return File(fileInBytes, "application/octet-stream", "exported_data.csv");
-    }
-
-    [HttpGet]
-    [Route("GetTimeZone")]
-    public async Task<IActionResult> GetTimeZone(double lat, double lng)
-    {
-        var timezone = TimeZoneLookup.GetTimeZone(lat, lng);
-
-        return Ok(timezone);
     }
 }

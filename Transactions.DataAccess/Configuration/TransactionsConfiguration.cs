@@ -27,21 +27,19 @@ public class TransactionsConfiguration : IEntityTypeConfiguration<TransactionsIn
             .HasDefaultValue(0.00); //todo: delete it later mb
 
         builder
-            .Property(x => x.TransactionDate)
-            .HasColumnType("datetime");
+            .Property(x => x.TransactionDate);
 
         builder
             .Property(e => e.ClientLocation);
-        // .HasConversion(
-        //     v => $"{v.Latitude},{v.Longitude}",
-        //     v => FromStringToLocation(v)
-        // );
-    }
 
-    // private static Location FromStringToLocation(string location) 
-    //     => new () {
-    //         Latitude = double.Parse(location.Split(",")[0]),
-    //         Longitude = double.Parse(location.Split(',')[1])
-    //     };
+        builder
+            .Property(x => x.TimeZone)
+            .HasColumnType("nvarchar(MAX)")
+            .HasConversion(
+                v => v.Id,
+                v => TimeZoneInfo.FindSystemTimeZoneById(v)
+            );
+
+    }
 }
 

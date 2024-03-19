@@ -1,26 +1,27 @@
 using System.Globalization;
 using CsvHelper;
 using Transactions.DataAccess.Entities;
+using TransactionsAPI.Entities;
 using TransactionsAPI.Infrastructure.CsvHelperConfiguration;
 using TransactionsAPI.Infrastructure.Interfaces;
 
 namespace TransactionsAPI.Services;
 
-public class CsvParser : IParser<TransactionsInfo>
+public class CsvParser : IParser<TransactionsInfoModel>
 {
-    public List<TransactionsInfo> ReadFromFile(IFormFile file)
+    public List<TransactionsInfoModel> ReadFromFile(IFormFile file)
     {
         using (var reader = new StreamReader(file.OpenReadStream()))
         using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
         {
             csv.Context.RegisterClassMap<TransactionsInfoMap>();
-            var records = csv.GetRecords<TransactionsInfo>();
+            var records = csv.GetRecords<TransactionsInfoModel>();
 
             return records.ToList();
         }
     }
 
-    public byte[] WriteIntoFile(List<TransactionsInfo> list)
+    public byte[] WriteIntoFile(List<TransactionsInfoModel> list)
     {
         using (var memoryStream = new MemoryStream())
         {

@@ -1,10 +1,11 @@
 using CsvHelper.Configuration;
 using Transactions.DataAccess.Entities;
+using TransactionsAPI.Entities;
 using TransactionsAPI.Infrastructure.CsvHelperConfiguration.Convertors;
 
 namespace TransactionsAPI.Infrastructure.CsvHelperConfiguration;
 
-public class TransactionsInfoMap : ClassMap<TransactionsInfo>
+public class TransactionsInfoMap : ClassMap<TransactionsInfoModel>
 {
     public TransactionsInfoMap()
     {
@@ -22,8 +23,8 @@ public class TransactionsInfoMap : ClassMap<TransactionsInfo>
         
         Map(x => x.Amount)
             .Index(3)
-            .Name("amount")
-            .TypeConverter<AmountConvertor>();
+            .Name("amount");
+            //.TypeConverter<AmountConvertor>();
         
         Map(x => x.TransactionDate)
             .Index(4)
