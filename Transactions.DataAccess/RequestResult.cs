@@ -1,4 +1,4 @@
-namespace TransactionsAPI.Infrastructure;
+namespace Transactions.DataAccess;
 
 public class RequestResult
 {

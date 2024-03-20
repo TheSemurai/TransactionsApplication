@@ -2,23 +2,31 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Transactions.DataAccess.Entities;
-using TransactionsAPI.Infrastructure;
 using TransactionsAPI.Services;
 
 namespace Transactions.DataAccess;
 
+/// <summary>
+/// Class for handling requests to database
+/// </summary>
 public class DatabaseHandler
 {
-    private readonly IConfiguration _configuration;
+    private readonly string _connectionString;
     public DatabaseHandler(IConfiguration configuration)
     {
-        _configuration = configuration;
+        _connectionString = configuration.GetConnectionString("DefaultConnection");
     }
 
+    /// <summary>
+    /// Getting a specific transactions by time zone
+    /// </summary>
+    /// <param name="timeZone">Specific time zone location</param>
+    /// <param name="from">Specific from date</param>
+    /// <param name="to">Specific to date</param>
+    /// <returns></returns>
     public async Task<IEnumerable<TransactionsInfo>> GetSpecificTransactionsByTimeZone(TimeZoneInfo timeZone, DateTimeOffset from,
         DateTimeOffset to)
     {
-        var connectionString = _configuration.GetConnectionString("DefaultConnection");
         var selectQuery = @"SELECT [TransactionId]
                                   ,[Name]
                                   ,[Email]
@@ -36,7 +44,7 @@ public class DatabaseHandler
             toDate = to,
         };
         
-        await using var connection = new SqlConnection(connectionString);
+        await using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
 
         var getAllRequest = await connection.QueryAsync(selectQuery, parameters);
@@ -55,40 +63,13 @@ public class DatabaseHandler
         connection.Close();
         return transactions;
     }
-    
-    public async Task<IEnumerable<TransactionsInfo>> GetCurrentTransactions(String email, DateTimeOffset from,
-        DateTimeOffset to)
-    {
-        var connectionString = _configuration.GetConnectionString("DefaultConnection");
-        var selectQuery = @"SELECT [TransactionId]
-                                  ,[Name]
-                                  ,[Email]
-                                  ,[Amount]
-                                  ,[TransactionDate]
-                                  ,[ClientLocation]
-                              FROM [TransactionsDB].[dbo].[Transactions]
-                              WHERE [Email] = @email 
-                              AND [TransactionDate] BETWEEN @fromDate AND @toDate";
-                              //AND [TimeZone] = @TimeZone"; // todo: delete
-        var parameters = new
-        {
-            email = email,
-            fromDate = from,
-            toDate = to,
-        };
-        
-        await using var connection = new SqlConnection(connectionString);
-        await connection.OpenAsync();
 
-        var allTransactions = await connection.QueryAsync<TransactionsInfo>(selectQuery, parameters);
-        
-        connection.Close();
-        return allTransactions;
-    }
-
+    /// <summary>
+    /// Getting all transaction from database
+    /// </summary>
+    /// <returns>IEnumerable of TransactionsInfo</returns>
     public async Task<IEnumerable<TransactionsInfo>> GetAllTransactions()
     {
-        var connectionString = _configuration.GetConnectionString("DefaultConnection");
         var selectQuery = @"SELECT [TransactionId]
                                   ,[Name]
                                   ,[Email]
@@ -98,11 +79,9 @@ public class DatabaseHandler
                                   ,[TimeZone]
                               FROM [TransactionsDB].[dbo].[Transactions]";
         
-        await using var connection = new SqlConnection(connectionString);
+        await using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
 
-        //var allTransactions = await connection.QueryAsync<TransactionsInfo>(selectQuery);
-        
         var getAllRequest = await connection.QueryAsync(selectQuery);
 
         IEnumerable<TransactionsInfo> transactions = getAllRequest.Select(x => new TransactionsInfo()
@@ -120,9 +99,13 @@ public class DatabaseHandler
         return transactions;
     }
 
+    /// <summary>
+    /// Updating transaction by id, if it does not exist add to database
+    /// </summary>
+    /// <param name="transactions">Collection of transactions</param>
+    /// <returns>Result of request</returns>
     public async Task<RequestResult> InsertTransactionsAsync(ICollection<TransactionsInfo> transactions)
     {
-        var connectionString = _configuration.GetConnectionString("DefaultConnection");
         var insertQuery = @"MERGE [TransactionsDB].[dbo].[Transactions] WITH (SERIALIZABLE) AS OriginTrans
                             USING (VALUES (@TransactionId,@Name,@Email,@Amount,@TransactionDate,@ClientLocation,@TimeZone)) 
                                         AS Trans (TransactionId, Name, Email, Amount, TransactionDate, ClientLocation, Timezone)
@@ -148,7 +131,7 @@ public class DatabaseHandler
             Timezone = x.TimeZone.Id,
         });
 
-        await using var connection = new SqlConnection(connectionString);
+        await using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
 
         await using var transaction = connection.BeginTransaction();

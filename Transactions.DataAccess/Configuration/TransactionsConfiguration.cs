@@ -4,6 +4,9 @@ using Transactions.DataAccess.Entities;
 
 namespace Transactions.DataAccess.Configuration;
 
+/// <summary>
+/// Configuration for making a migration data
+/// </summary>
 public class TransactionsConfiguration : IEntityTypeConfiguration<TransactionsInfo>
 {
     public void Configure(EntityTypeBuilder<TransactionsInfo> builder)

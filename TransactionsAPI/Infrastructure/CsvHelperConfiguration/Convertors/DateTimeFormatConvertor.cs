@@ -5,6 +5,9 @@ using CsvHelper.TypeConversion;
 
 namespace TransactionsAPI.Infrastructure.CsvHelperConfiguration.Convertors;
 
+/// <summary>
+/// Convertor of date time offset data for csv parser
+/// </summary>
 public class DateTimeFormatConvertor : DefaultTypeConverter
 {
     private const string pattern = "yyyy-MM-dd HH:mm:ss";

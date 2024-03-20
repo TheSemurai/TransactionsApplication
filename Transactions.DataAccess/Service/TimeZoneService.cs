@@ -37,16 +37,16 @@ public static class TimeZoneService
             timeZoneId = "Europe/Kiev";
 
         if (timeZoneId is "Antarctica/Troll")
-            return CreateTrollTimeZone(timeZoneId);
+            return CreateTrollTimeZone();
         
         return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
     }
     
     // Unfortunately, TimeZoneOnly does not contain a "Antarctica/Troll" and one of solutions are here
     // Issue: https://github.com/mattjohnsonpint/TimeZoneConverter/issues/62
-    private static TimeZoneInfo CreateTrollTimeZone(string timeZoneId) =>
+    private static TimeZoneInfo CreateTrollTimeZone() =>
         TimeZoneInfo.CreateCustomTimeZone(
-            id: timeZoneId,
+            id: "Antarctica/Troll",
             baseUtcOffset: TimeSpan.Zero,
             displayName: "(UTC+00:00) Troll Station, Antarctica",
             standardDisplayName: "Greenwich Mean Time",

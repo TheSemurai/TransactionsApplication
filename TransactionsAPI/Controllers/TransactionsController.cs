@@ -22,29 +22,6 @@ public class TransactionsController : BaseController
     }
 
     /// <summary>
-    /// Getting current user transactions
-    /// </summary>
-    /// <param name="email">Identification of user</param>
-    /// <param name="from">Search from date</param>
-    /// <param name="to">Search to date</param>
-    /// <returns>Transaction by current user time zone</returns>
-    [HttpGet]
-    [Route("MyTransactions")]
-    public async Task<IActionResult> MyTransactions(string email, DateTimeOffset from,
-        DateTimeOffset to)
-    {
-        var transactions = await _databaseHandler.GetCurrentTransactions(email, from, to);
-
-        if (!transactions.Any())
-            return NoContent();
-
-        var model = transactions.Select(transaction => 
-            transaction.CreateModelFromTransaction());
-        
-        return Ok(model);
-    }
-    
-    /// <summary>
     /// Getting all transactions by specific range (from, to) based on time zones other users
     /// </summary>
     /// <param name="timeZoneId">Specific data </param>
@@ -79,7 +56,7 @@ public class TransactionsController : BaseController
              return NoContent();
         
         var transactionsModel = transactions.Select(model => 
-            model.CreateModelFromTransaction()).ToList();
+            model.CreateModelFromTransaction());
         
         return Ok(transactionsModel);
     }
@@ -134,7 +111,7 @@ public class TransactionsController : BaseController
     [Route("ExportToExcel")]
     public async Task<IActionResult> ExportToExcel(ExportedColumns exportedColumns)
     {
-        var transactions = (await _databaseHandler.GetAllTransactions()).ToList();
+        var transactions = await _databaseHandler.GetAllTransactions();
 
         if (!transactions.Any())
             return NoContent();
@@ -167,15 +144,14 @@ public class TransactionsController : BaseController
             return BadRequest("Something went wrong by coordinates.");
         }
         
-        var transactions = (await _databaseHandler.GetAllTransactions()).ToList();
+        var transactions = (await _databaseHandler.GetAllTransactions());
 
         if (!transactions.Any())
             return NoContent();
         
         var transactionsModel = transactions.Select(model => 
             model.CreateModelFromTransactionByCurrentUserTimeZone(timeZoneInfo)).ToList();
-
-        //var fileInBytes = _parser.WriteIntoFile(transactionsModel);
+        
         var fileInBytes = _parser.WriteIntoFileWithCustomHeader(transactionsModel, exportedColumns);
         
         return File(fileInBytes, "application/octet-stream", $"exported_data_{TimeZoneInfo.ConvertTime(DateTime.Now, timeZoneInfo)}.csv");

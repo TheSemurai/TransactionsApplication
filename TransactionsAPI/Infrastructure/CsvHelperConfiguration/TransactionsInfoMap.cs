@@ -4,6 +4,9 @@ using TransactionsAPI.Infrastructure.CsvHelperConfiguration.Convertors;
 
 namespace TransactionsAPI.Infrastructure.CsvHelperConfiguration;
 
+/// <summary>
+/// Class for mapping a TransactionsInfoModel
+/// </summary>
 public class TransactionsInfoMap : ClassMap<TransactionsInfoModel>
 {
     public TransactionsInfoMap()
