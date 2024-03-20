@@ -21,6 +21,13 @@ public class TransactionsController : BaseController
         _databaseHandler = databaseHandler;
     }
 
+    /// <summary>
+    /// Getting current user transactions
+    /// </summary>
+    /// <param name="email">Identification of user</param>
+    /// <param name="from">Search from date</param>
+    /// <param name="to">Search to date</param>
+    /// <returns>Transaction by current user time zone</returns>
     [HttpGet]
     [Route("MyTransactions")]
     public async Task<IActionResult> MyTransactions(string email, DateTimeOffset from,
@@ -37,6 +44,13 @@ public class TransactionsController : BaseController
         return Ok(model);
     }
     
+    /// <summary>
+    /// Getting all transactions by specific range (from, to) based on time zones other users
+    /// </summary>
+    /// <param name="timeZoneId">Specific data </param>
+    /// <param name="from">Search from date</param>
+    /// <param name="to">Search to date</param>
+    /// <returns>Transaction by specific time zone</returns>
     [HttpGet]
     [Route("AllTransactionsByTimeZone")]
     public async Task<IActionResult> AllTransactionsByTimeZone(string timeZoneId, DateTimeOffset from,
@@ -69,7 +83,12 @@ public class TransactionsController : BaseController
         
         return Ok(transactionsModel);
     }
-    
+
+    /// <summary>
+    /// Importing a specific data from file to database
+    /// </summary>
+    /// <param name="file">Specific data of transactions</param>
+    /// <returns>Result of request</returns>
     [HttpPost]
     [Route("ImportExcelData")]
     public async Task<IActionResult> ImportExcelData(IFormFile file)
@@ -105,7 +124,12 @@ public class TransactionsController : BaseController
 
         return BadRequest(request);
     }
-    
+
+    /// <summary>
+    /// Exporting data from database without specific user`s time zone
+    /// </summary>
+    /// <param name="exportedColumns">Chosen columns by user</param>
+    /// <returns>Excel file (csv)</returns>
     [HttpPost]
     [Route("ExportToExcel")]
     public async Task<IActionResult> ExportToExcel(ExportedColumns exportedColumns)
@@ -122,7 +146,13 @@ public class TransactionsController : BaseController
         
         return File(fileInBytes, "application/octet-stream", $"exported_data.csv");
     }
-
+    
+    /// <summary>
+    /// Exporting data from database with time by specific user`s time zone
+    /// </summary>
+    /// <param name="coordinates">Specific user coordinates</param>
+    /// <param name="exportedColumns">Chosen columns by user</param>
+    /// <returns>Excel file (csv)</returns>
     [HttpPost]
     [Route("ExportToExcelFromSpecificTimeZone")]
     public async Task<IActionResult> ExportToExcelFromSpecificTimeZone(string coordinates, ExportedColumns exportedColumns)
