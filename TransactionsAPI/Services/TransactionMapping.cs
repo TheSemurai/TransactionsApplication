@@ -17,22 +17,7 @@ public static class TransactionMapping
             ClientLocation = transaction.ClientLocation,
         };
     }
-    
-    // public static TransactionsInfoModel CreateModelFromTransactionByCurrentUserTimeZone(this TransactionsInfo transaction, string coordinates)
-    // {
-    //     var currentUserTimeZone = TimeZoneService.ConvertToTimeZoneInfo(coordinates);
-    //     
-    //     return new TransactionsInfoModel()
-    //     {
-    //         TransactionId = transaction.TransactionId,
-    //         Name = transaction.Name,
-    //         Email = transaction.Email,
-    //         Amount = $"${transaction.Amount}",
-    //         TransactionDate = TimeZoneInfo.ConvertTime(transaction.TransactionDate, currentUserTimeZone),
-    //         ClientLocation = transaction.ClientLocation,
-    //     };
-    // }
-    
+
     public static TransactionsInfoModel CreateModelFromTransactionByCurrentUserTimeZone(this TransactionsInfo transaction, TimeZoneInfo timeZoneInfo) 
         => new ()
         {

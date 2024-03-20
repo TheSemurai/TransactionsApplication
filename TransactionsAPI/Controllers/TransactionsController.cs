@@ -1,6 +1,4 @@
-using GeoTimeZone;
 using Microsoft.AspNetCore.Mvc;
-using MiniExcelLibs;
 using Transactions.DataAccess;
 using Transactions.DataAccess.Entities;
 using TransactionsAPI.Entities;
@@ -16,7 +14,7 @@ public class TransactionsController : BaseController
     private readonly DatabaseHandler _databaseHandler;
 
     public TransactionsController(
-        IParser<TransactionsInfoModel> parser, 
+        IParser<TransactionsInfoModel> parser,
         DatabaseHandler databaseHandler)
     {
         _parser = parser;
@@ -71,7 +69,7 @@ public class TransactionsController : BaseController
         
         return Ok(transactionsModel);
     }
-
+    
     [HttpPost]
     [Route("ImportExcelData")]
     public async Task<IActionResult> ImportExcelData(IFormFile file)
@@ -107,10 +105,10 @@ public class TransactionsController : BaseController
 
         return BadRequest(request);
     }
-
-    [HttpGet]
+    
+    [HttpPost]
     [Route("ExportToExcel")]
-    public async Task<IActionResult> ExportToExcel()
+    public async Task<IActionResult> ExportToExcel(ExportedColumns exportedColumns)
     {
         var transactions = (await _databaseHandler.GetAllTransactions()).ToList();
 
@@ -119,15 +117,15 @@ public class TransactionsController : BaseController
         
         var transactionsModel = transactions.Select(model => 
             model.CreateModelFromTransaction()).ToList();
-
-        var fileInBytes = _parser.WriteIntoFile(transactionsModel);
-
+        
+        var fileInBytes = _parser.WriteIntoFileWithCustomHeader(transactionsModel, exportedColumns);
+        
         return File(fileInBytes, "application/octet-stream", $"exported_data.csv");
     }
-    
-    [HttpGet]
+
+    [HttpPost]
     [Route("ExportToExcelFromSpecificTimeZone")]
-    public async Task<IActionResult> ExportToExcelFromSpecificTimeZone(string coordinates)
+    public async Task<IActionResult> ExportToExcelFromSpecificTimeZone(string coordinates, ExportedColumns exportedColumns)
     {
         TimeZoneInfo timeZoneInfo;
         try
@@ -147,8 +145,9 @@ public class TransactionsController : BaseController
         var transactionsModel = transactions.Select(model => 
             model.CreateModelFromTransactionByCurrentUserTimeZone(timeZoneInfo)).ToList();
 
-        var fileInBytes = _parser.WriteIntoFile(transactionsModel);
-
+        //var fileInBytes = _parser.WriteIntoFile(transactionsModel);
+        var fileInBytes = _parser.WriteIntoFileWithCustomHeader(transactionsModel, exportedColumns);
+        
         return File(fileInBytes, "application/octet-stream", $"exported_data_{TimeZoneInfo.ConvertTime(DateTime.Now, timeZoneInfo)}.csv");
     }
 }

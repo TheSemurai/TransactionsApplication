@@ -3,18 +3,18 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Transactions.DataAccess.Entities;
 using TransactionsAPI.Infrastructure;
+using TransactionsAPI.Services;
 
 namespace Transactions.DataAccess;
 
 public class DatabaseHandler
 {
     private readonly IConfiguration _configuration;
-
     public DatabaseHandler(IConfiguration configuration)
     {
         _configuration = configuration;
     }
-    
+
     public async Task<IEnumerable<TransactionsInfo>> GetSpecificTransactionsByTimeZone(TimeZoneInfo timeZone, DateTimeOffset from,
         DateTimeOffset to)
     {
@@ -113,7 +113,7 @@ public class DatabaseHandler
             Amount = x.Amount,
             TransactionDate = x.TransactionDate,
             ClientLocation = x.ClientLocation,
-            TimeZone = TimeZoneInfo.FindSystemTimeZoneById(x.TimeZone),
+            TimeZone = TimeZoneService.CreateTimeZoneById(x.TimeZone),
         });
         
         connection.Close();

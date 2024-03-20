@@ -2,8 +2,17 @@ using GeoTimeZone;
 
 namespace TransactionsAPI.Services;
 
+/// <summary>
+/// Working with client location and time zone info by IANA
+/// https://www.iana.org/time-zones
+/// </summary>
 public static class TimeZoneService
 {
+    /// <summary>
+    /// The method convert a client location to current time zone
+    /// </summary>
+    /// <param name="clientLocation">Specific user location, which contain coordinates (latitude, longitude).</param>
+    /// <returns>object of TimeZoneInfo</returns>
     public static TimeZoneInfo ConvertToTimeZoneInfo(string clientLocation)
     {
         var coordinates = clientLocation.Split(",");
@@ -11,19 +20,31 @@ public static class TimeZoneService
         var longitude = double.Parse(coordinates[1]);
 
         var timeZoneId = TimeZoneLookup.GetTimeZone(latitude, longitude).Result;
-    
+
+        return CreateTimeZoneById(timeZoneId);
+    }
+
+    /// <summary>
+    /// Create a some time zone by specific id
+    /// </summary>
+    /// <param name="timeZoneId">Specific time zone id by IANA</param>
+    /// <returns>object of TimeZoneInfo</returns>
+    public static TimeZoneInfo CreateTimeZoneById(string timeZoneId)
+    {
         // Some issue with region Kyiv.
         // Details: https://github.com/dotnet/runtime/issues/83188
         if (timeZoneId is "Europe/Kyiv")
             timeZoneId = "Europe/Kiev";
 
         if (timeZoneId is "Antarctica/Troll")
-            return timeZoneId.CreateTrollTimeZone();
-
+            return CreateTrollTimeZone(timeZoneId);
+        
         return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
     }
     
-    private static TimeZoneInfo CreateTrollTimeZone(this string timeZoneId) =>
+    // Unfortunately, TimeZoneOnly does not contain a "Antarctica/Troll" and one of solutions are here
+    // Issue: https://github.com/mattjohnsonpint/TimeZoneConverter/issues/62
+    private static TimeZoneInfo CreateTrollTimeZone(string timeZoneId) =>
         TimeZoneInfo.CreateCustomTimeZone(
             id: timeZoneId,
             baseUtcOffset: TimeSpan.Zero,
