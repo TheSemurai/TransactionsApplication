@@ -1,5 +1,6 @@
 using GeoTimeZone;
 using Microsoft.AspNetCore.Mvc;
+using MiniExcelLibs;
 using Transactions.DataAccess;
 using Transactions.DataAccess.Entities;
 using TransactionsAPI.Entities;
@@ -121,6 +122,33 @@ public class TransactionsController : BaseController
 
         var fileInBytes = _parser.WriteIntoFile(transactionsModel);
 
-        return File(fileInBytes, "application/octet-stream", "exported_data.csv");
+        return File(fileInBytes, "application/octet-stream", $"exported_data.csv");
+    }
+    
+    [HttpGet]
+    [Route("ExportToExcelFromSpecificTimeZone")]
+    public async Task<IActionResult> ExportToExcelFromSpecificTimeZone(string coordinates)
+    {
+        TimeZoneInfo timeZoneInfo;
+        try
+        {
+            timeZoneInfo = TimeZoneService.ConvertToTimeZoneInfo(coordinates);
+        }
+        catch (Exception e)
+        {
+            return BadRequest("Something went wrong by coordinates.");
+        }
+        
+        var transactions = (await _databaseHandler.GetAllTransactions()).ToList();
+
+        if (!transactions.Any())
+            return NoContent();
+        
+        var transactionsModel = transactions.Select(model => 
+            model.CreateModelFromTransactionByCurrentUserTimeZone(timeZoneInfo)).ToList();
+
+        var fileInBytes = _parser.WriteIntoFile(transactionsModel);
+
+        return File(fileInBytes, "application/octet-stream", $"exported_data_{TimeZoneInfo.ConvertTime(DateTime.Now, timeZoneInfo)}.csv");
     }
 }

@@ -95,15 +95,29 @@ public class DatabaseHandler
                                   ,[Amount]
                                   ,[TransactionDate]
                                   ,[ClientLocation]
+                                  ,[TimeZone]
                               FROM [TransactionsDB].[dbo].[Transactions]";
         
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
 
-        var allTransactions = await connection.QueryAsync<TransactionsInfo>(selectQuery);
+        //var allTransactions = await connection.QueryAsync<TransactionsInfo>(selectQuery);
+        
+        var getAllRequest = await connection.QueryAsync(selectQuery);
+
+        IEnumerable<TransactionsInfo> transactions = getAllRequest.Select(x => new TransactionsInfo()
+        {
+            TransactionId = x.TransactionId,
+            Name = x.Name,
+            Email = x.Email,
+            Amount = x.Amount,
+            TransactionDate = x.TransactionDate,
+            ClientLocation = x.ClientLocation,
+            TimeZone = TimeZoneInfo.FindSystemTimeZoneById(x.TimeZone),
+        });
         
         connection.Close();
-        return allTransactions;
+        return transactions;
     }
 
     public async Task<RequestResult> InsertTransactionsAsync(ICollection<TransactionsInfo> transactions)

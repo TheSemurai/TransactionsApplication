@@ -1,4 +1,3 @@
-using GeoTimeZone;
 using Transactions.DataAccess.Entities;
 using TransactionsAPI.Entities;
 
@@ -14,29 +13,49 @@ public static class TransactionMapping
             Name = transaction.Name,
             Email = transaction.Email,
             Amount = $"${transaction.Amount}",
-            TransactionDate = transaction.TransactionDate,
+            TransactionDate = TimeZoneInfo.ConvertTime(transaction.TransactionDate, transaction.TimeZone),
             ClientLocation = transaction.ClientLocation,
         };
     }
     
+    // public static TransactionsInfoModel CreateModelFromTransactionByCurrentUserTimeZone(this TransactionsInfo transaction, string coordinates)
+    // {
+    //     var currentUserTimeZone = TimeZoneService.ConvertToTimeZoneInfo(coordinates);
+    //     
+    //     return new TransactionsInfoModel()
+    //     {
+    //         TransactionId = transaction.TransactionId,
+    //         Name = transaction.Name,
+    //         Email = transaction.Email,
+    //         Amount = $"${transaction.Amount}",
+    //         TransactionDate = TimeZoneInfo.ConvertTime(transaction.TransactionDate, currentUserTimeZone),
+    //         ClientLocation = transaction.ClientLocation,
+    //     };
+    // }
+    
+    public static TransactionsInfoModel CreateModelFromTransactionByCurrentUserTimeZone(this TransactionsInfo transaction, TimeZoneInfo timeZoneInfo) 
+        => new ()
+        {
+            TransactionId = transaction.TransactionId,
+            Name = transaction.Name,
+            Email = transaction.Email,
+            Amount = $"${transaction.Amount}",
+            TransactionDate = TimeZoneInfo.ConvertTime(transaction.TransactionDate, timeZoneInfo),
+            ClientLocation = transaction.ClientLocation,
+        };
+
     public static TransactionsInfo CreateOriginTransactionFromModel(this TransactionsInfoModel model)
     {
         var amount = decimal.Parse(model.Amount.Substring(1));
+        var timeZone = TimeZoneService.ConvertToTimeZoneInfo(model.ClientLocation);
 
-        var coordinates = model.ClientLocation.Split(",");
-        var latitude = double.Parse(coordinates[0]);
-        var longitude = double.Parse(coordinates[1]);
-
-        var timeZoneId = TimeZoneLookup.GetTimeZone(latitude, longitude).Result;
-        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        
         return new TransactionsInfo()
         {
             TransactionId = model.TransactionId,
             Name = model.Name,
             Email = model.Email,
             Amount = amount,
-            TransactionDate = model.TransactionDate,
+            TransactionDate = model.TransactionDate.UtcDateTime,
             ClientLocation = model.ClientLocation,
             TimeZone = timeZone,
         };
