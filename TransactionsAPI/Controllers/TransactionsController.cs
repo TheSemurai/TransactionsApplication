@@ -36,7 +36,7 @@ public class TransactionsController : BaseController
         TimeZoneInfo timeZone;
         try
         {
-            timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            timeZone = TimeZoneService.FindOrCreateTimeZoneById(timeZoneId);
         }
         catch (Exception e)
         {

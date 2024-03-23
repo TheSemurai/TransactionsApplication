@@ -21,7 +21,7 @@ public static class TimeZoneService
 
         var timeZoneId = TimeZoneLookup.GetTimeZone(latitude, longitude).Result;
 
-        return CreateTimeZoneById(timeZoneId);
+        return FindOrCreateTimeZoneById(timeZoneId);
     }
 
     /// <summary>
@@ -29,7 +29,7 @@ public static class TimeZoneService
     /// </summary>
     /// <param name="timeZoneId">Specific time zone id by IANA</param>
     /// <returns>object of TimeZoneInfo</returns>
-    public static TimeZoneInfo CreateTimeZoneById(string timeZoneId)
+    public static TimeZoneInfo FindOrCreateTimeZoneById(string timeZoneId)
     {
         // Some issue with region Kyiv.
         // Details: https://github.com/dotnet/runtime/issues/83188

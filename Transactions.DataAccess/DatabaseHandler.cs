@@ -35,13 +35,11 @@ public class DatabaseHandler
                                   ,[ClientLocation]
                                   ,[TimeZone]
                               FROM [TransactionsDB].[dbo].[Transactions]
-                              WHERE [TimeZone] = @timeZone 
-                              AND [TransactionDate] BETWEEN @fromDate AND @toDate";
+                              WHERE [TransactionDate] BETWEEN @fromDate AND @toDate";
         var parameters = new
         {
-            timeZone = timeZone.Id,
-            fromDate = from,
-            toDate = to,
+            fromDate = TimeZoneInfo.ConvertTimeToUtc(from.DateTime, timeZone),
+            toDate = TimeZoneInfo.ConvertTimeToUtc(to.DateTime, timeZone),
         };
         
         await using var connection = new SqlConnection(_connectionString);
@@ -57,7 +55,7 @@ public class DatabaseHandler
             Amount = x.Amount,
             TransactionDate = x.TransactionDate,
             ClientLocation = x.ClientLocation,
-            TimeZone = TimeZoneInfo.FindSystemTimeZoneById(x.TimeZone),
+            TimeZone = TimeZoneService.FindOrCreateTimeZoneById(x.TimeZone),
         });
         
         connection.Close();
@@ -92,7 +90,7 @@ public class DatabaseHandler
             Amount = x.Amount,
             TransactionDate = x.TransactionDate,
             ClientLocation = x.ClientLocation,
-            TimeZone = TimeZoneService.CreateTimeZoneById(x.TimeZone),
+            TimeZone = TimeZoneService.FindOrCreateTimeZoneById(x.TimeZone),
         });
         
         connection.Close();
@@ -126,7 +124,7 @@ public class DatabaseHandler
             Name = x.Name, 
             Email = x.Email, 
             Amount = x.Amount, 
-            TransactionDate = x.TransactionDate, 
+            TransactionDate = TimeZoneInfo.ConvertTimeToUtc(x.TransactionDate.DateTime), 
             ClientLocation = x.ClientLocation,
             Timezone = x.TimeZone.Id,
         });
