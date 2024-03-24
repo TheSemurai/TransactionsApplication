@@ -60,6 +60,46 @@ public class TransactionsController : BaseController
         
         return Ok(transactionsModel);
     }
+    
+    /// <summary>
+    /// Getting all transactions by specific range (from, to) with time based on time zone
+    /// </summary>
+    /// <param name="timeZoneId">Specific user`s time zone</param>
+    /// <param name="from">Search from date</param>
+    /// <param name="to">Search to date</param>
+    /// <returns>Transaction by specific time zone</returns>
+    [HttpGet]
+    [Route("FindTransactionWithDateByLocalTimeZone")]
+    public async Task<IActionResult> FindTransactionWithDateByLocalTimeZone(string timeZoneId, DateTimeOffset from,
+        DateTimeOffset to)
+    {
+        TimeZoneInfo timeZone;
+        try
+        {
+            timeZone = TimeZoneService.FindOrCreateTimeZoneById(timeZoneId);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(new RequestResult()
+            {
+                Success = false,
+                Messages = new List<string>()
+                {
+                    $"Something went wrong with time zone name (name: {timeZoneId}).",
+                }
+            });
+        }
+
+        var transactions = await _databaseHandler.GetSpecificTransactionsByTimeZone(timeZone, from, to);
+        
+        if (!transactions.Any())
+            return NoContent();
+        
+        var transactionsModel = transactions.Select(model => 
+            model.CreateModelFromTransactionByCurrentUserTimeZone(timeZone));
+        
+        return Ok(transactionsModel);
+    }
 
     /// <summary>
     /// Importing a specific data from file to database

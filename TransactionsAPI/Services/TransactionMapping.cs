@@ -39,7 +39,7 @@ public static class TransactionMapping
             Name = transaction.Name,
             Email = transaction.Email,
             Amount = $"${transaction.Amount}",
-            TransactionDate = TimeZoneInfo.ConvertTime(transaction.TransactionDate, timeZoneInfo).DateTime,
+            TransactionDate = TimeZoneInfo.ConvertTime(transaction.TransactionDate, timeZoneInfo),
             ClientLocation = transaction.ClientLocation,
         };
 
