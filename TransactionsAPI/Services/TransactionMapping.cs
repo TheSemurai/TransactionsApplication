@@ -12,7 +12,6 @@ public static class TransactionMapping
     /// Mapping original object to transaction model
     /// </summary>
     /// <param name="transaction">Specific transaction</param>
-    /// <param name="timeZoneInfo">Specific user`s time zone</param>
     /// <returns>Mapped TransactionModel object</returns>
     public static TransactionsInfoModel CreateModelFromTransaction(this TransactionsInfo transaction)
     {
@@ -22,7 +21,7 @@ public static class TransactionMapping
             Name = transaction.Name,
             Email = transaction.Email,
             Amount = $"${transaction.Amount}",
-            TransactionDate = TimeZoneInfo.ConvertTime(transaction.TransactionDate, transaction.TimeZone),
+            TransactionDate = TimeZoneInfo.ConvertTime(transaction.TransactionDate, transaction.TimeZone).DateTime,
             ClientLocation = transaction.ClientLocation,
         };
     }
@@ -40,7 +39,7 @@ public static class TransactionMapping
             Name = transaction.Name,
             Email = transaction.Email,
             Amount = $"${transaction.Amount}",
-            TransactionDate = TimeZoneInfo.ConvertTime(transaction.TransactionDate, timeZoneInfo),
+            TransactionDate = TimeZoneInfo.ConvertTime(transaction.TransactionDate, timeZoneInfo).DateTime,
             ClientLocation = transaction.ClientLocation,
         };
 
@@ -60,7 +59,7 @@ public static class TransactionMapping
             Name = model.Name,
             Email = model.Email,
             Amount = amount,
-            TransactionDate = model.TransactionDate.UtcDateTime,
+            TransactionDate = TimeZoneInfo.ConvertTime(model.TransactionDate, timeZone),
             ClientLocation = model.ClientLocation,
             TimeZone = timeZone,
         };

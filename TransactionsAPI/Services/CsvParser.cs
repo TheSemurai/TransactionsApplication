@@ -96,7 +96,9 @@ public class CsvParser : IParser<TransactionsInfoModel>
                         object value;
 
                         if (property.Name == "TransactionDate")
-                            value = TimeZoneInfo.ConvertTimeToUtc(item.TransactionDate.DateTime, 
+                            // value = TimeZoneInfo.ConvertTimeToUtc(item.TransactionDate.DateTime, 
+                            //     TimeZoneService.ConvertToTimeZoneInfo(item.ClientLocation)).ToString("yyyy-MM-dd HH:mm:ss");
+                            value = TimeZoneInfo.ConvertTimeToUtc(item.TransactionDate, 
                                 TimeZoneService.ConvertToTimeZoneInfo(item.ClientLocation)).ToString("yyyy-MM-dd HH:mm:ss");
                         else 
                             value = typeof(TransactionsInfoModel).GetProperty(property.Name).GetValue(item);
