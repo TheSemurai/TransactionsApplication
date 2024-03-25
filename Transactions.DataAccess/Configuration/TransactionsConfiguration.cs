@@ -31,11 +31,13 @@ public class TransactionsConfiguration : IEntityTypeConfiguration<TransactionsIn
 
         // special datetime column by UTC time
         builder
-            .Property(x => x.TransactionDate);
+            .Property(x => x.TransactionDate)
+            .HasColumnType("datetime2(3)");
         
         // special datetime column by local time
         builder
-            .Property(x => x.TransactionDateAtLocal);
+            .Property(x => x.TransactionDateAtLocal)
+            .HasColumnType("datetime2(3)");
 
         builder
             .Property(e => e.ClientLocation);

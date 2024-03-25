@@ -17,8 +17,13 @@ public class DatabaseHandler
         _connectionString = configuration.GetConnectionString("DefaultConnection");
     }
     
-    public async Task<IEnumerable<TransactionsInfo>> GetTransactionsByTheirTime( DateTimeOffset from,
-        DateTimeOffset to)
+    /// <summary>
+    /// Getting transactions from specific local time range
+    /// </summary>
+    /// <param name="from">Specific from date</param>
+    /// <param name="to">Specific to date</param>
+    /// <returns>Collection of transactions from request</returns>
+    public async Task<IEnumerable<TransactionsInfo>> GetTransactionsByTheirTime(DateTime from, DateTime to)
     {
         var selectQuery = @"SELECT [TransactionId]
                                   ,[Name]
@@ -47,10 +52,10 @@ public class DatabaseHandler
             Name = x.Name,
             Email = x.Email,
             Amount = x.Amount,
-            TransactionDate = x.TransactionDate,
+            TransactionDate = DateTime.SpecifyKind(x.TransactionDate, DateTimeKind.Utc),
             ClientLocation = x.ClientLocation,
             TimeZone = TimeZoneService.FindOrCreateTimeZoneById(x.TimeZone),
-            TransactionDateAtLocal = x.TransactionDateAtLocal,
+            TransactionDateAtLocal = DateTime.SpecifyKind(x.TransactionDateAtLocal, DateTimeKind.Local),
         });
         
         connection.Close();
@@ -63,9 +68,8 @@ public class DatabaseHandler
     /// <param name="timeZone">Specific time zone location</param>
     /// <param name="from">Specific from date</param>
     /// <param name="to">Specific to date</param>
-    /// <returns></returns>
-    public async Task<IEnumerable<TransactionsInfo>> GetSpecificTransactionsByTimeZone(TimeZoneInfo timeZone, DateTimeOffset from,
-        DateTimeOffset to)
+    /// <returns>Collection of transactions from request</returns>
+    public async Task<IEnumerable<TransactionsInfo>> GetSpecificTransactionsByTimeZone(TimeZoneInfo timeZone, DateTime from, DateTime to)
     {
         var selectQuery = @"SELECT [TransactionId]
                                   ,[Name]
@@ -78,8 +82,8 @@ public class DatabaseHandler
                               WHERE [TransactionDate] BETWEEN @fromDate AND @toDate";
         var parameters = new
         {
-            fromDate = TimeZoneInfo.ConvertTimeToUtc(from.DateTime, timeZone),
-            toDate = TimeZoneInfo.ConvertTimeToUtc(to.DateTime, timeZone),
+            fromDate = TimeZoneInfo.ConvertTimeToUtc(from, timeZone),
+            toDate = TimeZoneInfo.ConvertTimeToUtc(to, timeZone),
         };
         
         await using var connection = new SqlConnection(_connectionString);
@@ -93,7 +97,7 @@ public class DatabaseHandler
             Name = x.Name,
             Email = x.Email,
             Amount = x.Amount,
-            TransactionDate = x.TransactionDate,
+            TransactionDate = DateTime.SpecifyKind(x.TransactionDate, DateTimeKind.Utc),
             ClientLocation = x.ClientLocation,
             TimeZone = TimeZoneService.FindOrCreateTimeZoneById(x.TimeZone),
         });
@@ -105,7 +109,7 @@ public class DatabaseHandler
     /// <summary>
     /// Getting all transaction from database
     /// </summary>
-    /// <returns>IEnumerable of TransactionsInfo</returns>
+    /// <returns>Collection of transactions from request</returns>
     public async Task<IEnumerable<TransactionsInfo>> GetAllTransactions()
     {
         var selectQuery = @"SELECT [TransactionId]
@@ -128,7 +132,7 @@ public class DatabaseHandler
             Name = x.Name,
             Email = x.Email,
             Amount = x.Amount,
-            TransactionDate = x.TransactionDate,
+            TransactionDate = DateTime.SpecifyKind(x.TransactionDate, DateTimeKind.Utc),
             ClientLocation = x.ClientLocation,
             TimeZone = TimeZoneService.FindOrCreateTimeZoneById(x.TimeZone),
         });
@@ -165,8 +169,8 @@ public class DatabaseHandler
             Name = x.Name, 
             Email = x.Email, 
             Amount = x.Amount, 
-            TransactionDate = x.TransactionDate, 
-            TransactionDateAtLocal = x.TransactionDateAtLocal,
+            TransactionDate = DateTime.SpecifyKind(x.TransactionDate, DateTimeKind.Utc), 
+            TransactionDateAtLocal = DateTime.SpecifyKind(x.TransactionDateAtLocal, DateTimeKind.Local),
             ClientLocation = x.ClientLocation,
             Timezone = x.TimeZone.Id,
         });

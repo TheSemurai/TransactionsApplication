@@ -12,9 +12,9 @@ public class DateTimeFormatConvertor : DefaultTypeConverter
 {
     private const string pattern = "yyyy-MM-dd HH:mm:ss";
 
-    public override object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
-        => DateTimeOffset.ParseExact(text, pattern, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+    public override object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData) 
+        => DateTime.SpecifyKind(DateTime.ParseExact(text, pattern, CultureInfo.InvariantCulture), DateTimeKind.Utc);
 
     public override string ConvertToString(object value, IWriterRow row, MemberMapData memberMapData)
-        => ((DateTimeOffset) value).ToString(pattern, CultureInfo.InvariantCulture);
+        => ((DateTime) value).ToString(pattern, CultureInfo.InvariantCulture);
 }

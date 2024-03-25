@@ -34,8 +34,8 @@ public class TransactionsController : BaseController
     /// <returns>List of transactions by specific range</returns>
     [HttpGet]
     [Route("FindTransactionByCurrentUserTimeZone")]
-    public async Task<IActionResult> FindTransactionByCurrentUserTimeZone(string timeZoneId, DateTimeOffset from,
-        DateTimeOffset to)
+    public async Task<IActionResult> FindTransactionByCurrentUserTimeZone(string timeZoneId, DateTime from,
+        DateTime to)
     {
         TimeZoneInfo timeZone;
         try
@@ -73,8 +73,8 @@ public class TransactionsController : BaseController
     /// <returns>List of transactions by specific range</returns>
     [HttpGet]
     [Route("FindTransactionInAnotherUserTimeZone")]
-    public async Task<IActionResult> FindTransactionInAnotherUserTimeZone(DateTimeOffset from,
-        DateTimeOffset to)
+    public async Task<IActionResult> FindTransactionInAnotherUserTimeZone(DateTime from,
+        DateTime to)
     {
         var transactions = await _databaseHandler.GetTransactionsByTheirTime( from, to);
         
@@ -164,6 +164,10 @@ public class TransactionsController : BaseController
         
         var fileInBytes = _writerExcel.WriteIntoFileWithCustomHeader(transactionsModel, exportedColumns);
         
-        return File(fileInBytes, "application/octet-stream", $"exported_data_{TimeZoneInfo.ConvertTime(DateTime.Now, timeZone).ToString("yyyy-MM-dd HH:mm:ss")}.xlsx");
+        return File(
+            fileInBytes, 
+            "application/octet-stream", 
+            $"exported_data_{TimeZoneInfo.ConvertTime(DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Local), timeZone).ToString("yyyy-MM-dd HH:mm:ss")}.xlsx"
+            );
     }
 }

@@ -22,7 +22,7 @@ public static class TransactionMapping
             Name = transaction.Name,
             Email = transaction.Email,
             Amount = $"${transaction.Amount}",
-            TransactionDate = TimeZoneInfo.ConvertTime(transaction.TransactionDate, transaction.TimeZone).DateTime,
+            TransactionDate = transaction.TransactionDate,
             ClientLocation = transaction.ClientLocation,
         };
     }
@@ -39,7 +39,7 @@ public static class TransactionMapping
             Name = transaction.Name,
             Email = transaction.Email,
             Amount = $"${transaction.Amount}",
-            TransactionDate = transaction.TransactionDateAtLocal,
+            TransactionDate = DateTime.SpecifyKind(transaction.TransactionDateAtLocal, DateTimeKind.Local),
             ClientLocation = transaction.ClientLocation,
         };
 
@@ -69,6 +69,7 @@ public static class TransactionMapping
     {
         var amount = decimal.Parse(model.Amount.Substring(1));
         var timeZone = TimeZoneService.ConvertToTimeZoneInfo(model.ClientLocation);
+        var localTime = TimeZoneInfo.ConvertTime(model.TransactionDate, timeZone);
 
         return new TransactionsInfo()
         {
@@ -76,8 +77,8 @@ public static class TransactionMapping
             Name = model.Name,
             Email = model.Email,
             Amount = amount,
-            TransactionDate = model.TransactionDate, // already in UTC by default
-            TransactionDateAtLocal = TimeZoneInfo.ConvertTime(model.TransactionDate, timeZone),
+            TransactionDate = DateTime.SpecifyKind(model.TransactionDate, DateTimeKind.Utc), // already in UTC by default
+            TransactionDateAtLocal = DateTime.SpecifyKind(localTime, DateTimeKind.Utc),
             ClientLocation = model.ClientLocation,
             TimeZone = timeZone,
         };
