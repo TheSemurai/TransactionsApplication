@@ -55,8 +55,6 @@ In the request you can choose some fields what you wanted to see in Excel file, 
 }
 ```
 
-<br>Example:<br>
-
 <br>Response:<br>
 ![image](https://github.com/TheSemurai/TransactionsApplication/assets/58783774/b6ce2c22-64c3-48fb-9225-e1e5d3d33cca)
 
