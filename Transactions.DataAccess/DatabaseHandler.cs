@@ -17,7 +17,7 @@ public class DatabaseHandler
         _connectionString = configuration.GetConnectionString("DefaultConnection");
     }
     
-    public async Task<IEnumerable<TransactionsInfo>> GetTransactionsByTheirTime(TimeZoneInfo timeZone, DateTimeOffset from,
+    public async Task<IEnumerable<TransactionsInfo>> GetTransactionsByTheirTime( DateTimeOffset from,
         DateTimeOffset to)
     {
         var selectQuery = @"SELECT [TransactionId]

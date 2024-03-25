@@ -7,19 +7,8 @@ using TransactionsAPI.Infrastructure.Interfaces;
 
 namespace TransactionsAPI.Services;
 
-public class ExcelParser : IParser<TransactionsInfoModel>
+public class ExcelParser : IWriter<TransactionsInfoModel>
 {
-    /// <summary>
-    /// Unfortunately, is not implemented for now
-    /// </summary>
-    /// <param name="file">Specific file data</param>
-    /// <returns>List of transactions models</returns>
-    /// <exception cref="NotImplementedException">Unfortunately, is not implemented for now</exception>
-    public List<TransactionsInfoModel> ReadFromFile(IFormFile file)
-    {
-        throw new NotImplementedException();
-    }
-
     /// <summary>
     /// Unfortunately, is not implemented for now
     /// </summary>

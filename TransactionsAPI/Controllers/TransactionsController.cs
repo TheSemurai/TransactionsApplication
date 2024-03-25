@@ -12,69 +12,29 @@ namespace TransactionsAPI.Controllers;
 public class TransactionsController : BaseController
 {
     private readonly IParser<TransactionsInfoModel> _parserCsv;
-    private readonly IParser<TransactionsInfoModel> _parserExcel;
+    private readonly IWriter<TransactionsInfoModel> _writerExcel;
     private readonly DatabaseHandler _databaseHandler;
 
     public TransactionsController(
         IParser<TransactionsInfoModel> parserCsv, 
-        IParser<TransactionsInfoModel> parserExcel, 
+        IWriter<TransactionsInfoModel> writerExcel, 
         DatabaseHandler databaseHandler)
     {
         _parserCsv = parserCsv;
-        _parserExcel = parserExcel;
+        _writerExcel = writerExcel;
         _databaseHandler = databaseHandler;
     }
 
     /// <summary>
-    /// Getting all transactions by specific range (from, to) based on time zones other users
+    /// Getting transactions from specific range in current user time zone
     /// </summary>
-    /// <param name="timeZoneId">Specific data </param>
-    /// <param name="from">Search from date</param>
-    /// <param name="to">Search to date</param>
-    /// <returns>Transaction by specific time zone</returns>
+    /// <param name="timeZoneId">Specific time zone id by IANA</param>
+    /// <param name="from">From specific time</param>
+    /// <param name="to">To specific time</param>
+    /// <returns>List of transactions by specific range</returns>
     [HttpGet]
-    [Route("AllTransactionsByTimeZone")]
-    public async Task<IActionResult> AllTransactionsByTimeZone(string timeZoneId, DateTimeOffset from,
-        DateTimeOffset to)
-    {
-        TimeZoneInfo timeZone;
-        try
-        {
-            timeZone = TimeZoneService.FindOrCreateTimeZoneById(timeZoneId);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(new RequestResult()
-            {
-                Success = false,
-                Messages = new List<string>()
-                {
-                    $"Something went wrong with time zone name (name: {timeZoneId}).",
-                }
-            });
-        }
-
-        var transactions = await _databaseHandler.GetSpecificTransactionsByTimeZone(timeZone, from, to);
-        
-        if (!transactions.Any())
-             return NoContent();
-        
-        var transactionsModel = transactions.Select(model => 
-            model.CreateModelFromTransaction());
-        
-        return Ok(transactionsModel);
-    }
-    
-    /// <summary>
-    /// Getting all transactions by specific range (from, to) with time based on time zone
-    /// </summary>
-    /// <param name="timeZoneId">Specific user`s time zone</param>
-    /// <param name="from">Search from date</param>
-    /// <param name="to">Search to date</param>
-    /// <returns>Transaction by specific time zone</returns>
-    [HttpGet]
-    [Route("FindTransactionWithDateByLocalTimeZone")]
-    public async Task<IActionResult> FindTransactionWithDateByLocalTimeZone(string timeZoneId, DateTimeOffset from,
+    [Route("FindTransactionByCurrentUserTimeZone")]
+    public async Task<IActionResult> FindTransactionByCurrentUserTimeZone(string timeZoneId, DateTimeOffset from,
         DateTimeOffset to)
     {
         TimeZoneInfo timeZone;
@@ -105,29 +65,18 @@ public class TransactionsController : BaseController
         return Ok(transactionsModel);
     }
     
+    /// <summary>
+    /// Getting transactions from specific range at local user time
+    /// </summary>
+    /// <param name="from">From specific time</param>
+    /// <param name="to">To specific time</param>
+    /// <returns>List of transactions by specific range</returns>
     [HttpGet]
-    [Route("FindTransactionsAtLocalTime")]
-    public async Task<IActionResult> FindTransactionsAtLocalTime(string timeZoneId, DateTimeOffset from,
+    [Route("FindTransactionInAnotherUserTimeZone")]
+    public async Task<IActionResult> FindTransactionInAnotherUserTimeZone(DateTimeOffset from,
         DateTimeOffset to)
     {
-        TimeZoneInfo timeZone;
-        try
-        {
-            timeZone = TimeZoneService.FindOrCreateTimeZoneById(timeZoneId);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(new RequestResult()
-            {
-                Success = false,
-                Messages = new List<string>()
-                {
-                    $"Something went wrong with time zone name (name: {timeZoneId}).",
-                }
-            });
-        }
-
-        var transactions = await _databaseHandler.GetTransactionsByTheirTime(timeZone, from, to);
+        var transactions = await _databaseHandler.GetTransactionsByTheirTime( from, to);
         
         if (!transactions.Any())
             return NoContent();
@@ -139,7 +88,7 @@ public class TransactionsController : BaseController
     }
 
     /// <summary>
-    /// Importing a specific data from file to database
+    /// Importing a specific transactions data from csv file into database
     /// </summary>
     /// <param name="file">Specific data of transactions</param>
     /// <returns>Result of request</returns>
@@ -180,14 +129,31 @@ public class TransactionsController : BaseController
     }
 
     /// <summary>
-    /// Exporting data from database without specific user`s time zone
+    /// Exporting transactions data to xlsx file by UTC time 
     /// </summary>
     /// <param name="exportedColumns">Chosen columns by user</param>
-    /// <returns>Excel file (csv)</returns>
+    /// <returns>Excel file (format: xlsx)</returns>
     [HttpPost]
     [Route("ExportToExcel")]
-    public async Task<IActionResult> ExportToExcel(ExportedColumns exportedColumns)
+    public async Task<IActionResult> ExportToExcel(string timeZoneId, ExportedColumns exportedColumns)
     {
+        TimeZoneInfo timeZone;
+        try
+        {
+            timeZone = TimeZoneService.FindOrCreateTimeZoneById(timeZoneId);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(new RequestResult()
+            {
+                Success = false,
+                Messages = new List<string>()
+                {
+                    $"Something went wrong with time zone name (name: {timeZoneId}).",
+                }
+            });
+        }
+        
         var transactions = await _databaseHandler.GetAllTransactions();
 
         if (!transactions.Any())
@@ -196,41 +162,8 @@ public class TransactionsController : BaseController
         var transactionsModel = transactions.Select(model => 
             model.CreateModelFromTransaction()).ToList();
         
-        var fileInBytes = _parserExcel.WriteIntoFileWithCustomHeader(transactionsModel, exportedColumns);
+        var fileInBytes = _writerExcel.WriteIntoFileWithCustomHeader(transactionsModel, exportedColumns);
         
-        return File(fileInBytes, "application/octet-stream", $"exported_data.xlsx");
-    }
-    
-    /// <summary>
-    /// Exporting data from database with time by specific user`s time zone
-    /// </summary>
-    /// <param name="coordinates">Specific user coordinates</param>
-    /// <param name="exportedColumns">Chosen columns by user</param>
-    /// <returns>Excel file (csv)</returns>
-    [HttpPost]
-    [Route("ExportToExcelFromSpecificTimeZone")]
-    public async Task<IActionResult> ExportToExcelFromSpecificTimeZone(string coordinates, ExportedColumns exportedColumns)
-    {
-        TimeZoneInfo timeZoneInfo;
-        try
-        {
-            timeZoneInfo = TimeZoneService.ConvertToTimeZoneInfo(coordinates);
-        }
-        catch (Exception e)
-        {
-            return BadRequest("Something went wrong by coordinates.");
-        }
-        
-        var transactions = (await _databaseHandler.GetAllTransactions());
-
-        if (!transactions.Any())
-            return NoContent();
-        
-        var transactionsModel = transactions.Select(model => 
-            model.CreateModelFromTransactionByCurrentUserTimeZone(timeZoneInfo)).ToList();
-        
-        var fileInBytes = _parserCsv.WriteIntoFileWithCustomHeader(transactionsModel, exportedColumns);
-        
-        return File(fileInBytes, "application/octet-stream", $"exported_data_{TimeZoneInfo.ConvertTime(DateTime.Now, timeZoneInfo)}.csv");
+        return File(fileInBytes, "application/octet-stream", $"exported_data_{TimeZoneInfo.ConvertTime(DateTime.Now, timeZone).ToString("yyyy-MM-dd HH:mm:ss")}.xlsx");
     }
 }

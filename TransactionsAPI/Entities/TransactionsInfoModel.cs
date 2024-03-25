@@ -14,7 +14,7 @@ public class TransactionsInfoModel
     public string Email { get; set; }
     [ExcelColumn(Name = "amount", Width = 15)]
     public string Amount { get; set; }
-    [ExcelColumn(Name = "transaction_date", Format = "yyyy-MM-dd HH:mm:ss", Width = 30)]
+    [ExcelColumn(Name = "transaction_date", Format = "yyyy-MM-dd HH:mm:ss", Width = 25)]
     public DateTimeOffset TransactionDate { get; set; }
     [ExcelColumn(Name = "client_location", Width = 30)]
     public string ClientLocation { get; set; }
