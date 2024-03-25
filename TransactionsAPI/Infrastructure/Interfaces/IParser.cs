@@ -6,5 +6,5 @@ public interface IParser<T>
 {
     List<T> ReadFromFile(IFormFile file);
     byte[] WriteIntoFile(List<T> list);
-    byte[] WriteIntoFileWithCustomHeader(List<TransactionsInfoModel> list, ExportedColumns exportedColumns);
+    byte[] WriteIntoFileWithCustomHeader(IList<TransactionsInfoModel> list, ExportedColumns exportedColumns);
 }

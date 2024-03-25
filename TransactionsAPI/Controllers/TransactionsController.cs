@@ -11,14 +11,17 @@ namespace TransactionsAPI.Controllers;
 
 public class TransactionsController : BaseController
 {
-    private readonly IParser<TransactionsInfoModel> _parser;
+    private readonly IParser<TransactionsInfoModel> _parserCsv;
+    private readonly IParser<TransactionsInfoModel> _parserExcel;
     private readonly DatabaseHandler _databaseHandler;
 
     public TransactionsController(
-        IParser<TransactionsInfoModel> parser,
+        IParser<TransactionsInfoModel> parserCsv, 
+        IParser<TransactionsInfoModel> parserExcel, 
         DatabaseHandler databaseHandler)
     {
-        _parser = parser;
+        _parserCsv = parserCsv;
+        _parserExcel = parserExcel;
         _databaseHandler = databaseHandler;
     }
 
@@ -144,7 +147,7 @@ public class TransactionsController : BaseController
     [Route("ImportExcelData")]
     public async Task<IActionResult> ImportExcelData(IFormFile file)
     {
-        var transactionsModel = _parser.ReadFromFile(file);
+        var transactionsModel = _parserCsv.ReadFromFile(file);
 
         if (!transactionsModel.Any())
             return NoContent();
@@ -193,9 +196,9 @@ public class TransactionsController : BaseController
         var transactionsModel = transactions.Select(model => 
             model.CreateModelFromTransaction()).ToList();
         
-        var fileInBytes = _parser.WriteIntoFileWithCustomHeader(transactionsModel, exportedColumns);
+        var fileInBytes = _parserExcel.WriteIntoFileWithCustomHeader(transactionsModel, exportedColumns);
         
-        return File(fileInBytes, "application/octet-stream", $"exported_data.csv");
+        return File(fileInBytes, "application/octet-stream", $"exported_data.xlsx");
     }
     
     /// <summary>
@@ -226,7 +229,7 @@ public class TransactionsController : BaseController
         var transactionsModel = transactions.Select(model => 
             model.CreateModelFromTransactionByCurrentUserTimeZone(timeZoneInfo)).ToList();
         
-        var fileInBytes = _parser.WriteIntoFileWithCustomHeader(transactionsModel, exportedColumns);
+        var fileInBytes = _parserCsv.WriteIntoFileWithCustomHeader(transactionsModel, exportedColumns);
         
         return File(fileInBytes, "application/octet-stream", $"exported_data_{TimeZoneInfo.ConvertTime(DateTime.Now, timeZoneInfo)}.csv");
     }

@@ -56,7 +56,7 @@ public class CsvParser : IParser<TransactionsInfoModel>
     /// <param name="list">Collection of transactions</param>
     /// <param name="exportedColumns">Selected properties to export</param>
     /// <returns>array of bytes</returns>
-    public byte[] WriteIntoFileWithCustomHeader(List<TransactionsInfoModel> list, ExportedColumns exportedColumns)
+    public byte[] WriteIntoFileWithCustomHeader(IList<TransactionsInfoModel> list, ExportedColumns exportedColumns)
     {
         var dict = new Dictionary<string, string>()
         {
