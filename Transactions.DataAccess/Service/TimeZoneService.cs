@@ -1,6 +1,6 @@
 using GeoTimeZone;
 
-namespace TransactionsAPI.Services;
+namespace Transactions.DataAccess.Service;
 
 /// <summary>
 /// Working with client location and time zone info by IANA

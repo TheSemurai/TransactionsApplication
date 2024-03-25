@@ -1,4 +1,5 @@
 using Transactions.DataAccess.Entities;
+using Transactions.DataAccess.Service;
 using TransactionsAPI.Entities;
 
 namespace TransactionsAPI.Services;
@@ -25,6 +26,22 @@ public static class TransactionMapping
             ClientLocation = transaction.ClientLocation,
         };
     }
+    
+    /// <summary>
+    /// Mapping a specific TransactionsInfo to TransactionsInfoModel at local time of these transactions
+    /// </summary>
+    /// <param name="transaction">Specific transaction for mapping with model</param>
+    /// <returns>A new TransactionsInfoModel object at local time zone time</returns>
+    public static TransactionsInfoModel CreateTransactionModelAtLocalTime(this TransactionsInfo transaction) 
+        => new ()
+        {
+            TransactionId = transaction.TransactionId,
+            Name = transaction.Name,
+            Email = transaction.Email,
+            Amount = $"${transaction.Amount}",
+            TransactionDate = transaction.TransactionDateAtLocal,
+            ClientLocation = transaction.ClientLocation,
+        };
 
     /// <summary>
     /// Mapping original object to transaction model by specific user`s time zone

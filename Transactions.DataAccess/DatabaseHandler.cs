@@ -2,7 +2,7 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Transactions.DataAccess.Entities;
-using TransactionsAPI.Services;
+using Transactions.DataAccess.Service;
 
 namespace Transactions.DataAccess;
 
@@ -15,6 +15,46 @@ public class DatabaseHandler
     public DatabaseHandler(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection");
+    }
+    
+    public async Task<IEnumerable<TransactionsInfo>> GetTransactionsByTheirTime(TimeZoneInfo timeZone, DateTimeOffset from,
+        DateTimeOffset to)
+    {
+        var selectQuery = @"SELECT [TransactionId]
+                                  ,[Name]
+                                  ,[Email]
+                                  ,[Amount]
+                                  ,[TransactionDate]
+                                  ,[ClientLocation]
+                                  ,[TimeZone]
+                                  ,[TransactionDateAtLocal]
+                              FROM [TransactionsDB].[dbo].[Transactions]
+                              WHERE [TransactionDateAtLocal] BETWEEN @fromDate AND @toDate";
+        var parameters = new
+        {
+            fromDate = from,
+            toDate = to,
+        };
+        
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        var getAllRequest = await connection.QueryAsync(selectQuery, parameters);
+
+        IEnumerable<TransactionsInfo> transactions = getAllRequest.Select(x => new TransactionsInfo()
+        {
+            TransactionId = x.TransactionId,
+            Name = x.Name,
+            Email = x.Email,
+            Amount = x.Amount,
+            TransactionDate = x.TransactionDate,
+            ClientLocation = x.ClientLocation,
+            TimeZone = TimeZoneService.FindOrCreateTimeZoneById(x.TimeZone),
+            TransactionDateAtLocal = x.TransactionDateAtLocal,
+        });
+        
+        connection.Close();
+        return transactions;
     }
 
     /// <summary>

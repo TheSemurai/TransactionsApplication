@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Transactions.DataAccess;
 using Transactions.DataAccess.Entities;
+using Transactions.DataAccess.Service;
 using TransactionsAPI.Entities;
 using TransactionsAPI.Infrastructure;
 using TransactionsAPI.Infrastructure.Interfaces;
@@ -98,6 +99,39 @@ public class TransactionsController : BaseController
         var transactionsModel = transactions.Select(model => 
             model.CreateModelFromTransactionByCurrentUserTimeZone(timeZone));
         
+        return Ok(transactionsModel);
+    }
+    
+    [HttpGet]
+    [Route("FindTransactionsAtLocalTime")]
+    public async Task<IActionResult> FindTransactionsAtLocalTime(string timeZoneId, DateTimeOffset from,
+        DateTimeOffset to)
+    {
+        TimeZoneInfo timeZone;
+        try
+        {
+            timeZone = TimeZoneService.FindOrCreateTimeZoneById(timeZoneId);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(new RequestResult()
+            {
+                Success = false,
+                Messages = new List<string>()
+                {
+                    $"Something went wrong with time zone name (name: {timeZoneId}).",
+                }
+            });
+        }
+
+        var transactions = await _databaseHandler.GetTransactionsByTheirTime(timeZone, from, to);
+        
+        if (!transactions.Any())
+            return NoContent();
+        
+        var transactionsModel = transactions.Select(model => 
+            model.CreateTransactionModelAtLocalTime());
+
         return Ok(transactionsModel);
     }
 

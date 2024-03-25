@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Reflection;
 using CsvHelper;
+using Transactions.DataAccess.Service;
 using TransactionsAPI.Entities;
 using TransactionsAPI.Infrastructure.CsvHelperConfiguration;
 using TransactionsAPI.Infrastructure.Interfaces;
