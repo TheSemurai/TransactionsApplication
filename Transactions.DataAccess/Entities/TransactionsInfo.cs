@@ -10,6 +10,7 @@ public class TransactionsInfo
     public string Email { get; set; }
     public decimal Amount { get; set; }
     public DateTimeOffset TransactionDate { get; set; }
+    public DateTimeOffset TransactionDateAtLocal { get; set; }
     public string ClientLocation { get; set; }
     public TimeZoneInfo TimeZone { get; set; }
 }

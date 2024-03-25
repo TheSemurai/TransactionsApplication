@@ -105,8 +105,8 @@ public class DatabaseHandler
     public async Task<RequestResult> InsertTransactionsAsync(ICollection<TransactionsInfo> transactions)
     {
         var insertQuery = @"MERGE [TransactionsDB].[dbo].[Transactions] WITH (SERIALIZABLE) AS OriginTrans
-                            USING (VALUES (@TransactionId,@Name,@Email,@Amount,@TransactionDate,@ClientLocation,@TimeZone)) 
-                                        AS Trans (TransactionId, Name, Email, Amount, TransactionDate, ClientLocation, Timezone)
+                            USING (VALUES (@TransactionId,@Name,@Email,@Amount,@TransactionDate,@ClientLocation,@TimeZone, @TransactionDateAtLocal)) 
+                                        AS Trans (TransactionId, Name, Email, Amount, TransactionDate, ClientLocation, Timezone, TransactionDateAtLocal)
                             ON Trans.TransactionId = OriginTrans.TransactionId
                             WHEN MATCHED THEN
                             UPDATE SET  OriginTrans.Name = Trans.Name, 
@@ -114,17 +114,19 @@ public class DatabaseHandler
 			                            OriginTrans.Amount = Trans.Amount,
 			                            OriginTrans.TransactionDate = Trans.TransactionDate,
 			                            OriginTrans.ClientLocation = Trans.ClientLocation,
-			                            OriginTrans.Timezone = Trans.Timezone
+			                            OriginTrans.Timezone = Trans.Timezone,
+			                            OriginTrans.TransactionDateAtLocal = Trans.TransactionDateAtLocal
                             WHEN NOT MATCHED THEN
-                            INSERT (TransactionId, Name, Email, Amount, TransactionDate, ClientLocation, Timezone)
-                            VALUES (Trans.TransactionId, Trans.Name, Trans.Email, Trans.Amount, Trans.TransactionDate, Trans.ClientLocation, Trans.Timezone);";
+                            INSERT (TransactionId, Name, Email, Amount, TransactionDate, ClientLocation, Timezone, TransactionDateAtLocal)
+                            VALUES (Trans.TransactionId, Trans.Name, Trans.Email, Trans.Amount, Trans.TransactionDate, Trans.ClientLocation, Trans.Timezone, Trans.TransactionDateAtLocal);";
         var parameters = transactions.Select(x => new
         {
             TransactionId = x.TransactionId, 
             Name = x.Name, 
             Email = x.Email, 
             Amount = x.Amount, 
-            TransactionDate = TimeZoneInfo.ConvertTimeToUtc(x.TransactionDate.DateTime), 
+            TransactionDate = x.TransactionDate, 
+            TransactionDateAtLocal = x.TransactionDateAtLocal,
             ClientLocation = x.ClientLocation,
             Timezone = x.TimeZone.Id,
         });

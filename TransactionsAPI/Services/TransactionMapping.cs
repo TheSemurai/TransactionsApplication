@@ -59,7 +59,8 @@ public static class TransactionMapping
             Name = model.Name,
             Email = model.Email,
             Amount = amount,
-            TransactionDate = TimeZoneInfo.ConvertTime(model.TransactionDate, timeZone),
+            TransactionDate = model.TransactionDate, // already in UTC by default
+            TransactionDateAtLocal = TimeZoneInfo.ConvertTime(model.TransactionDate, timeZone),
             ClientLocation = model.ClientLocation,
             TimeZone = timeZone,
         };

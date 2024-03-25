@@ -27,10 +27,15 @@ public class TransactionsConfiguration : IEntityTypeConfiguration<TransactionsIn
         builder
             .Property(x => x.Amount)
             .HasColumnType("decimal(10,2)")
-            .HasDefaultValue(0.00); //todo: delete it later mb
+            .HasDefaultValue(0.00);
 
+        // special datetime column by UTC time
         builder
             .Property(x => x.TransactionDate);
+        
+        // special datetime column by local time
+        builder
+            .Property(x => x.TransactionDateAtLocal);
 
         builder
             .Property(e => e.ClientLocation);
@@ -42,7 +47,6 @@ public class TransactionsConfiguration : IEntityTypeConfiguration<TransactionsIn
                 v => v.Id,
                 v => TimeZoneInfo.FindSystemTimeZoneById(v)
             );
-
     }
 }
 
